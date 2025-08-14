@@ -1,6 +1,6 @@
-# 🩺 Checkpoint Questionnaire App
+# 🩺 Checkpoint Fragebogen App
 
-**Checkpoint Questionnaire** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg / Kreis Wesel. It provides a multilingual, privacy-conscious questionnaire interface for visitors and stores or transmits responses securely for counselor use.
+**Checkpoint Fragebogen** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg / Kreis Wesel. It provides a multilingual, privacy-conscious questionnaire interface for visitors and stores or transmits responses securely for counselor use.
 
 The app is packaged as native executables for **Windows** (`.exe`) and **macOS** (`.dmg`) using **Tauri**, ensuring fast performance, and local-first security. 
 
@@ -80,5 +80,5 @@ This project is released under the [MIT License](LICENSE).
 ---
 
 ## 📷 Screenshots
-_Add screenshots of the application here once available._
+![Checkpoint Fragebogen](assets/screenshot_checkpoint.png)
 
