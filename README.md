@@ -80,5 +80,6 @@ This project is released under the [MIT License](LICENSE).
 ---
 
 ## 📷 Screenshots
-![Checkpoint Fragebogen](assets/screenshot_checkpoint.png)
+![Checkpoint Fragebogen Ex1](assets/screenshot_checkpoint1.png)
+![Checkpoint Fragebogen Ex2](assets/screenshot_checkpoint2.png)
 
