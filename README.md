@@ -6,6 +6,8 @@ The app is packaged as native executables for **Windows** (`.exe`) and **macOS**
 
 **The app is currently under development — v0.2 (questionnaire logic implemented, results storage in progress).**
 
+For testing the current version, download the appropriate binary (`.exe` for Windows or `.dmg` for macOS) from the **Releases** section on the right-hand side of this page.
+
 ---
 
 ## 🛠 Tech Stack
