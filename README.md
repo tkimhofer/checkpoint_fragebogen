@@ -1,4 +1,4 @@
-# 🩺 Checkpoint Questionnaire - Aids Hilfe Duisburg / Kreis Wesel
+# 🩺 Checkpoint Questionnaire App
 
 **Checkpoint Questionnaire** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg / Kreis Wesel.  
 It provides a multilingual, privacy-conscious questionnaire interface for visitors and stores or transmits responses securely for counselor use.
