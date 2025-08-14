@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-
+const CURR_VERSION = "v0.2";
 // ---- submission config ----
 const API_HOST = "192.168.10.108";
 const API_PORT = 8000;
@@ -568,7 +568,9 @@ async function submitResponses() {
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <header className="flex items-center justify-between">
         <div className="flex flex-col items-start">
-          <span className="text-xs font-bold uppercase text-black bg-neon-green px-2 py-1 rounded">Prototyping</span>
+          <span className="text-xs font-bold uppercase text-black bg-neon-green px-2 py-1 rounded">
+            DEVEL {CURR_VERSION}
+          </span>
           <h1 className="text-2xl font-semibold">Checkpoint Fragebogen</h1>
         </div>
         <div className="flex items-center space-x-2">
