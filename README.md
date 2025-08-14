@@ -1,9 +1,9 @@
-# 🩺 Checkpoint AHD Questionnaire
+# 🩺 Checkpoint Questionnaire - Aids Hilfe Duisburg / Kreis Wesel
 
-**Checkpoint AHD Questionnaire** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg.  
+**Checkpoint Questionnaire** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg / Kreis Wesel.  
 It provides a multilingual, privacy-conscious questionnaire interface for visitors and stores or transmits responses securely for counselor use.
 
-The app is packaged as native executables for **Windows** (`.exe`) and **macOS** (`.dmg`) using **Tauri**, ensuring fast performance, small footprint, and local-first security.
+The app is packaged as native executables for **Windows** (`.exe`) and **macOS** (`.dmg`) using **Tauri**, ensuring fast performance, and local-first security.
 
 ---
 
