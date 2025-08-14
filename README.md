@@ -1,69 +1,83 @@
-# React + TypeScript + Vite
+# 🩺 Checkpoint AHD Questionnaire
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Checkpoint AHD Questionnaire** is a cross-platform desktop application for **anonymous STI testing intake** at Checkpoint Aids Hilfe Duisburg.  
+It provides a multilingual, privacy-conscious questionnaire interface for visitors and stores or transmits responses securely for counselor use.
 
-Currently, two official plugins are available:
+The app is packaged as native executables for **Windows** (`.exe`) and **macOS** (`.dmg`) using **Tauri**, ensuring fast performance, small footprint, and local-first security.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🛠 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### **Frontend**
+- **React 19** – Component-based UI framework
+- **TypeScript** – Strongly typed JavaScript for safer development
+- **Tailwind CSS** – Utility-first CSS framework for rapid, consistent styling
+- **Radix UI** – Accessible, headless UI primitives (`@radix-ui/react-*`)
+- **Lucide Icons** – Open-source SVG icon set
+- **class-variance-authority** / `clsx` – Utility for conditional class management
+- **tailwindcss-animate** – Tailwind plugin for animations
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### **Desktop Packaging**
+- **Tauri** – Secure, lightweight framework to build desktop apps with web tech  
+  - Targets:  
+    - **Windows**: NSIS installer (`.exe`)  
+    - **macOS**: `.app` & `.dmg` bundles  
+  - Rust backend provided by `src-tauri/`
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### **Build Tools & Development**
+- **Vite 7** – Next-generation frontend tooling for fast builds and HMR
+- **PostCSS** / **Autoprefixer** – CSS processing and browser compatibility
+- **ESLint + TypeScript ESLint** – Linting for consistent, error-free code
+- **pnpm** (via Tauri config) – Fast, disk-efficient package manager
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 📂 Project Structure
+```
+src/              # React/TypeScript source code
+src-tauri/        # Tauri Rust backend & build config
+components/       # Reusable UI components
+assets/           # Static images/icons
+index.css         # Tailwind CSS entry
+tailwind.config.js# Tailwind theme/config
+vite.config.ts    # Vite build configuration
+package.json      # Project scripts & dependencies
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Build & Run
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### **Development**
+```bash
+pnpm install
+pnpm tauri dev
 ```
+Runs the app with hot-reloading in a Tauri window.
+
+### **Production Build**
+```bash
+pnpm tauri build
+```
+Generates `.exe` (Windows) and `.dmg` (macOS) installers.
+
+---
+
+## 🌍 Features
+- Multilingual questionnaire (German, English, Turkish, Ukrainian)
+- Anonymous data handling
+- Designed for in-clinic use with counselor assistance
+- Responsive UI for various screen sizes
+- Secure local execution — no internet required unless configured
+
+---
+
+## 📄 License
+This project is released under the [MIT License](LICENSE).
+
+---
+
+## 📷 Screenshots
+_Add screenshots of the application here once available._
+
