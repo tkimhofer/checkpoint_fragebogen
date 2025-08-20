@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+// import { writeTextFile, exists } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
 
-const CURR_VERSION = "v0.2";
+
+const CURR_VERSION = "v0.3";
 // ---- submission config ----
 const API_HOST = "192.168.10.108";
 const API_PORT = 8000;
@@ -24,10 +27,16 @@ type Lang = "de" | "en" | "tr" | "uk";
 // const FLAG: Record<Lang, string> = { de: "🇩🇪", en: "🇬🇧", tr: "🇹🇷", uk: "🇺🇦" }; // unused
 // const LABEL: Record<Lang, string> = { de: "Deutsch", en: "English", tr: "Türkçe", uk: "Українська" }; // unused
 
-type Opt = { code: string; labels: Record<Lang, string> };
+// type Opt = { code: string; labels: Record<Lang, string> };
+type Opt = { 
+  code: string; 
+  labels: Record<Lang, string>; 
+  group?: string; // new → group name
+};
 
 const ANSWER_INDENT = "pl-6 md:pl-8";
-const OPTION_STACK  = "space-y-1";
+
+// const OPTION_STACK  = "space-y-1";
 // const ANSWER_INDENT = "pl-3 border-l border-muted/30"; // alternate style
 
 const SKIP_LABEL: Record<Lang, string> = {
@@ -44,43 +53,44 @@ const ANSWER_LABEL: Record<Lang, string> = {
   uk: "Хочу відповісти",
 };
 
+
 const QTITLE: Record<string, Record<Lang, string>> = {
-  age: { de: "Wie alt bis Du?", en: "How old are you?", tr: "Kaç yaşındasın?", uk: "Скільки тобі років?" },
-  sex_birth: { de: "Welches Geschlecht wurde Dir bei der Geburt eingetragen?", en: "What sex were you assigned at birth?", tr: "Doğumda sana hangi cinsiyet atandı?", uk: "Яку стать тобі було визначено при народженні?" },
-  gender: { de: "Wie beschreibst Du deine derzeitige Geschlechtsidentität?", en: "How do you describe your current gender identity?", tr: "Şu anki cinsiyet kimliğini nasıl tanımlarsın?", uk: "Як ти описуєш свою поточну гендерну ідентичність?" },
-  orientation: { de: "Wie beschreibst Du deine sexuelle Orientierung?", en: "How do you describe your sexual orientation?", tr: "Cinsel yönelimini nasıl tanımlarsın?", uk: "Як ти описуєш свою сексуальну орієнтацію?" },
-  birthCountry: { de: "Wo bist Du geboren?", en: "Where were you born?", tr: "Nerede doğdun?", uk: "Де ти народився/народилася?" },
-  insurance: { de: "Bist Du krankenversichert?", en: "Do you have health insurance?", tr: "Sağlık sigortan var mı?", uk: "Чи маєш медичне страхування?" },
-  doctor: { de: "Hast Du einen Arzt/Ärztin?", en: "Do you have a doctor?", tr: "Bir doktorun var mı?", uk: "Чи маєш лікаря?" },
-  hiv_test: { de: "Möchtest Du heute einen HIV Test machen?", en: "Would you like to take an HIV test today?", tr: "Bugün HIV testi yaptırmak ister misin?", uk: "Хочеш сьогодні здати тест на ВІЛ?" },
-  riskType: { de: "Aus welchem Grund möchtest Du dich auf HIV testen lassen?", en: "For what reason would you like to be tested for HIV?", tr: "HIV testi yaptırmak istemenin nedeni nedir?", uk: "З якої причини ти хочеш пройти тест на ВІЛ?" },
-  hiv_risk_selfest: { de: "Wie hoch schätzt Du das Risiko einer möglichen Ansteckung mit HIV ein?", en: "How do you rate the risk of a possible HIV infection?", tr: "Olası HIV bulaşma riskini nasıl değerlendiriyorsun?", uk: "Як ти оцінюєш ризик можливого зараження ВІЛ?" },
-  sexualRiskTime: { de: "Wie lange liegt die letzte Risikosituation zurück?", en: "How long ago was the last risk situation?", tr: "Son riskli durum ne kadar zaman önceydi?", uk: "Скільки часу минуло від твоєї останньої ризикової ситуації?" },
-  riskCountry: { de: "In welchem Land hattest Du die Risikosituation?", en: "In which country did the risk situation occur?", tr: "Riskli durum hangi ülkede gerçekleşti?", uk: "У якій країні сталася ризикова ситуація?" },
-  risk_situation: { de: "Wobei oder mit wem hattest Du die Risikosituation?", en: "In what context or with whom did the risk situation occur?", tr: "Riskli durum hangi bağlamda veya kiminle gerçekleşti?", uk: "У якому контексті або з ким сталася ризикова ситуація?" },
-  risk_situation_d1_1: { de: "Ungeschützter GV (anal/vaginal)?", en: "Unprotected anal/vaginal sex?", tr: "Korunmasız anal/vajinal ilişki?", uk: "Незахищений анальний/вагінальний секс?" },
-  risk_situation_d1_2: { de: "Kondom abgerutscht/gerissen?", en: "Condom slipped/torn?", tr: "Prezervatif kaydı/yırtıldı?", uk: "Презерватив зісковзнув/порвався?" },
-  risk_situation_d1_3: { de: "Oralverkehr?", en: "Oral sex?", tr: "Oral seks?", uk: "Оральний секс?" },
-  risk_situation_d2_1: { de: "Gründe ohne Kondom", en: "Reasons for no condom", tr: "Kondomsuz nedenler", uk: "Причини без презерватива" },
-  risk_situation_d1_4: { de: "Drogenkonsum?", en: "Drug use?", tr: "Uyuşturucu kullanımı?", uk: "Вживання наркотиків?" },
-  hiv_test_prev: { de: "Schon früher auf HIV getestet?", en: "Tested for HIV before?", tr: "Daha önce HIV testi?", uk: "Раніше тест на ВІЛ?" },
-  sti_history_yesno: { de: "Wurde je eine STI festgestellt?", en: "Ever diagnosed with an STI?", tr: "Hiç CYBH tanısı?", uk: "Колись діагностували ІПСШ?" },
-  sti_history_which: { de: "Welche STI?", en: "Which STI?", tr: "Hangi CYBH?", uk: "Яку саме ІПСШ?" },
-  sti_history_treat: { de: "Wurde die STI behandelt?", en: "Was the STI treated?", tr: "Tedavi edildi mi?", uk: "Було лікування?" },
-  sti_history_treat_country: { de: "In welchem Land behandelt?", en: "Treated in which country?", tr: "Hangi ülkede tedavi?", uk: "В якій країні лікували?" },
-  hepA: { de: "Hepatitis A geimpft?", en: "Vaccinated against Hep A?", tr: "Hep A aşılı mı?", uk: "Щеплення від гепатиту A?" },
-  hepB: { de: "Hepatitis B geimpft?", en: "Vaccinated against Hep B?", tr: "Hep B aşılı mı?", uk: "Щеплення від гепатиту B?" },
-  hepABVac: { de: "Serologie Hep A/B bei unklarem Status?", en: "Serology Hep A/B if unclear?", tr: "Belirsizse A/B seroloji?", uk: "Серологія A/B при невизначеному статусі?" },
-  hepC: { de: "Je Hepatitis C diagnostiziert?", en: "Ever Hep C diagnosis?", tr: "Hep C tanısı oldu mu?", uk: "Колись діагностували гепатит C?" },
-  hepC_tm: { de: "Medikamentös behandelt?", en: "Treated with medication?", tr: "İlaçla tedavi?", uk: "Медикаментозне лікування?" },
-  beraterkennung: {de: "Beraterkennung", en: "Counselor ID", tr: "Danışman ID", uk: "ID консультанта"},
-  beraterkommentar: {de: "Kommentar", en: "Comment", tr: "Yorum", uk: "Коментар"},
-  besucherkennung: {de: "Besucher-ID", en: "Visitor ID", tr: "Ziyaretçi ID", uk: "ID відвідувача"},
+  // age: { de: "Wie alt bis Du?", en: "How old are you?", tr: "Kaç yaşındasın?", uk: "Скільки тобі років?" },
+  // sex_birth: { de: "Welches Geschlecht wurde Dir bei der Geburt eingetragen?", en: "What sex were you assigned at birth?", tr: "Doğumda sana hangi cinsiyet atandı?", uk: "Яку стать тобі було визначено при народженні?" },
+  gender: { de: "Z1. Wie beschreibst Du deine derzeitige Geschlechtsidentität?", en: "How do you describe your current gender identity?", tr: "Şu anki cinsiyet kimliğini nasıl tanımlarsın?", uk: "Як ти описуєш свою поточну гендерну ідентичність?" },
+  orientation: { de: "1. Wie beschreibst Du deine sexuelle Orientierung?", en: "How do you describe your sexual orientation?", tr: "Cinsel yönelimini nasıl tanımlarsın?", uk: "Як ти описуєш свою сексуальну орієнтацію?" },
+  birthCountry: { de: "2. Wo bist Du geboren?", en: "Where were you born?", tr: "Nerede doğdun?", uk: "Де ти народився/народилася?" },
+  insurance: { de: "3. Bist Du krankenversichert?", en: "Do you have health insurance?", tr: "Sağlık sigortan var mı?", uk: "Чи маєш медичне страхування?" },
+  doctor: { de: "4. Hast Du einen Arzt/Ärztin?", en: "Do you have a doctor?", tr: "Bir doktorun var mı?", uk: "Чи маєш лікаря?" },
+  hiv_test: { de: "5.1 Möchtest Du heute einen HIV Test machen?", en: "Would you like to take an HIV test today?", tr: "Bugün HIV testi yaptırmak ister misin?", uk: "Хочеш сьогодні здати тест на ВІЛ?" },
+  riskType: { de: "5.2 Aus welchem Grund möchtest Du dich auf HIV testen lassen?", en: "For what reason would you like to be tested for HIV?", tr: "HIV testi yaptırmak istemenin nedeni nedir?", uk: "З якої причини ти хочеш пройти тест на ВІЛ?" },
+  hiv_risk_selfest: { de: "6. Wie hoch schätzt Du das Risiko einer möglichen Ansteckung mit HIV ein?", en: "How do you rate the risk of a possible HIV infection?", tr: "Olası HIV bulaşma riskini nasıl değerlendiriyorsun?", uk: "Як ти оцінюєш ризик можливого зараження ВІЛ?" },
+  sexualRiskTime: { de: "7. Wie lange liegt die letzte Risikosituation zurück?", en: "How long ago was the last risk situation?", tr: "Son riskli durum ne kadar zaman önceydi?", uk: "Скільки часу минуло від твоєї останньої ризикової ситуації?" },
+  riskCountry: { de: "8. In welchem Land hattest Du die Risikosituation?", en: "In which country did the risk situation occur?", tr: "Riskli durum hangi ülkede gerçekleşti?", uk: "У якій країні сталася ризикова ситуація?" },
+  risk_situation: { de: "9. Wobei oder mit wem hattest Du die Risikosituation?", en: "In what context or with whom did the risk situation occur?", tr: "Riskli durum hangi bağlamda veya kiminle gerçekleşti?", uk: "У якому контексті або з ким сталася ризикова ситуація?" },
+  risk_situation_d1_1: { de: "10.1 Ungeschützter GV (anal/vaginal)?", en: "Unprotected anal/vaginal sex?", tr: "Korunmasız anal/vajinal ilişki?", uk: "Незахищений анальний/вагінальний секс?" },
+  risk_situation_d1_2: { de: "10.2 Kondom abgerutscht/gerissen?", en: "Condom slipped/torn?", tr: "Prezervatif kaydı/yırtıldı?", uk: "Презерватив зісковзнув/порвався?" },
+  risk_situation_d1_3: { de: "10.3 Oralverkehr?", en: "Oral sex?", tr: "Oral seks?", uk: "Оральний секс?" },
+  risk_situation_d2_1: { de: "11. Gründe ohne Kondom", en: "Reasons for no condom", tr: "Kondomsuz nedenler", uk: "Причини без презерватива" },
+  risk_situation_d1_4: { de: "10.4 Drogenkonsum?", en: "Drug use?", tr: "Uyuşturucu kullanımı?", uk: "Вживання наркотиків?" },
+  hiv_test_prev: { de: "12. Schon früher auf HIV getestet?", en: "Tested for HIV before?", tr: "Daha önce HIV testi?", uk: "Раніше тест на ВІЛ?" },
+  sti_history_yesno: { de: "13.1 Wurde je eine STI festgestellt?", en: "Ever diagnosed with an STI?", tr: "Hiç CYBH tanısı?", uk: "Колись діагностували ІПСШ?" },
+  sti_history_which: { de: "13.2 Welche STI?", en: "Which STI?", tr: "Hangi CYBH?", uk: "Яку саме ІПСШ?" },
+  sti_history_treat: { de: "13.3 Wurde die STI behandelt?", en: "Was the STI treated?", tr: "Tedavi edildi mi?", uk: "Було лікування?" },
+  sti_history_treat_country: { de: "13.4 In welchem Land behandelt?", en: "Treated in which country?", tr: "Hangi ülkede tedavi?", uk: "В якій країні лікували?" },
+  hepA: { de: "16. Hepatitis A geimpft?", en: "Vaccinated against Hep A?", tr: "Hep A aşılı mı?", uk: "Щеплення від гепатиту A?" },
+  hepB: { de: "17. Hepatitis B geimpft?", en: "Vaccinated against Hep B?", tr: "Hep B aşılı mı?", uk: "Щеплення від гепатиту B?" },
+  hepABVac: { de: "18. Serologie Hep A/B bei unklarem Status?", en: "Serology Hep A/B if unclear?", tr: "Belirsizse A/B seroloji?", uk: "Серологія A/B при невизначеному статусі?" },
+  hepC: { de: "19.1 Je Hepatitis C diagnostiziert?", en: "Ever Hep C diagnosis?", tr: "Hep C tanısı oldu mu?", uk: "Колись діагностували гепатит C?" },
+  hepC_tm: { de: "19.2 Medikamentös behandelt?", en: "Treated with medication?", tr: "İlaçla tedavi?", uk: "Медикаментозне лікування?" },
+  beraterkennung: {de: "Beraterkennung", en: "Beraterkennung", tr: "Beraterkennung", uk: "Beraterkennung"},
+  beraterkommentar: {de: "Kommentar", en: "Kommentar", tr: "Kommentar", uk: "Kommentar"},
+  besucherkennung: {de: "Besucher-ID", en: "Besucher-ID", tr: "Besucher-ID", uk: "Besucher-ID"},
   testanforderungen: {de: "Testanforderungen", en: "Testanforderungen", tr: "Testanforderungen", uk: "Testanforderungen"},
 };
 const titleFor = (qid: string, lang: Lang) => QTITLE[qid]?.[lang] ?? qid;
 
-const PNR: Opt = { code: "pnr", labels: { de: "Möchte ich nicht sagen", en: "I'd rather not say", tr: "Söylemek istemiyorum", uk: "Волію не відповідати" } };
+// const PNR: Opt = { code: "pnr", labels: { de: "Möchte ich nicht sagen", en: "I'd rather not say", tr: "Söylemek istemiyorum", uk: "Волію не відповідати" } };
 
 const YES_NO: Opt[] = [
   { code: "yes", labels: { de: "Ja", en: "Yes", tr: "Evet", uk: "Так" } },
@@ -187,17 +197,20 @@ const DRUG_USE: Opt[] = [
   { code: "injected", labels: { de: "Ja, Gespritzt", en: "Yes, injected", tr: "Evet, enjekte", uk: "Так, ін'єкційно" } },
 ];
 
-// const HCV_THERAPY: Opt[] = [
-//   { code: "never", labels: { de: "Nie", en: "Never", tr: "Hiç", uk: "Ніколи" } },
-//   { code: "ongoing", labels: { de: "Aktuell in Behandlung", en: "Currently in therapy", tr: "Şu anda tedavide", uk: "Зараз у терапії" } },
-//   { code: "completed", labels: { de: "Abgeschlossen", en: "Completed", tr: "Tamamlandı", uk: "Завершено" } },
-// ];
+const GONO_CHLAM_MAP: Record<string, string> = {
+  go_throat: "chlam_throat",
+  go_urine: "chlam_urine",
+  go_anal: "chlam_anal",
+};
+
+
 
 // ---- Registry ----
 type QType = "radio" | "checkbox" | "text" | "textarea";
 type QDef = { type: QType; section: "general"|"hiv"|"sexpractices"|"other"|"summary"|"berater"; options?: Opt[]; placeholder?: Record<Lang,string> };
 
 const Q: Record<string, QDef> = {
+
   gender: { type: "radio", options: GENDER, section: "general" },
   orientation: { type: "radio", options: ORIENTATION, section: "general" },
   birthCountry: { type: "radio", options: BIRTH_COUNTRY, section: "general" },
@@ -247,24 +260,41 @@ const Q: Record<string, QDef> = {
 
   // berater
   besucherkennung: { type: "text", section: "berater" },
-  testanforderungen: { type: "checkbox", options: [
-    { code: "counsel", labels: { de: "Nur Beratung", en: "Nur Beratung", tr: "Nur Beratung", uk: "Nur Beratung" } },
-    { code: "hiv_poc", labels: { de: "HIV Schnelltest", en: "HIV Schnelltest", tr: "HIV Schnelltest", uk: "HIV Schnelltest" } },
-    { code: "hiv_lab", labels: { de: "HIV Labor", en: "HIV Labor", tr: "HIV Labor", uk: "HIV Labor" } },
-    { code: "tp", labels: { de: "Syphilis (Lues/TPHA)", en: "Syphilis (Lues/TPHA)", tr: "Syphilis (Lues/TPHA)", uk: "Syphilis (Lues/TPHA)" } },
-    { code: "hav", labels: { de: "HAV", en: "HAV", tr: "HAV", uk: "HAV" } },
-    { code: "hbv", labels: { de: "HBC (noch nie geimpft, hatte keine Hep B)", en: "HBC (noch nie geimpft, hatte keine Hep B)", tr: "HBC (noch nie geimpft, hatte keine Hep B)", uk: "HBC (noch nie geimpft, hatte keine Hep B)" } },
-    { code: "go_throat", labels: { de: "GO - Rachen", en: "GO - throat", tr: "GO - Rachen", uk: "GO - горло" } },
-    { code: "go_urine", labels: { de: "GO - Urin", en: "GO - urine", tr: "GO - Urin", uk: "GO - сеча" } },
-    { code: "go_anal", labels: { de: "GO - Rektal", en: "GO - rectal", tr: "GO - Rektal", uk: "GO - ректальний" } },
-    { code: "go_vaginal", labels: { de: "GO - Vaginal", en: "GO - vaginal", tr: "GO - Vaginal", uk: "GO - вагінальний" } },
-    { code: "chlam_throat", labels: { de: "Chlamydien - Rachen", en: "Chlamydia - throat", tr: "Chlamydien - Rachen", uk: "Хламідії - горло" } },
-    { code: "chlam_urine", labels: { de: "Chlamydien - Urin", en: "Chlamydia - urine", tr: "Chlamydien - Urin", uk: "Хламідії - сеча" } },
-    { code: "chlam_anal", labels: { de: "Chlamydien - Rektal", en: "Chlamydia - rectal", tr: "Chlamydien - Rektal", uk: "Хламідії - ректальні" } },
-    { code: "chlam_vaginal", labels: { de: "Chlamydien - Vaginal", en: "Chlamydia - vaginal", tr: "Chlamydien - Vaginal", uk: "Хламідії - вагінальні" } },
-  ], section: "berater" },
-  beraterkommentar: { type: "textarea", section: "berater" },
+
+  testanforderungen: { 
+    type: "checkbox", 
+    section: "berater",
+    options: [
+      // Beratung
+      { code: "counsel", labels: { de: "Nur Beratung", en: "Counsel only", tr: "Nur Beratung", uk: "Лише консультація" }, group: "Beratung" },
+
+      // HIV
+      { code: "hiv_poc", labels: { de: "HIV Schnelltest", en: "HIV rapid test", tr: "HIV Schnelltest", uk: "Швидкий тест на ВІЛ" }, group: "HIV" },
+      { code: "hiv_lab", labels: { de: "HIV Labor", en: "HIV lab test", tr: "HIV Labor", uk: "Лабораторний тест на ВІЛ" }, group: "HIV" },
+
+      // Syphilis
+      { code: "tp", labels: { de: "Syphilis (Labor)", en: "Syphilis (lab)", tr: "Sifiliz (Labor)", uk: "Сифіліс (лаб.)" }, group: "Syphilis" },
+
+      // Gonorrhoe/Chlam
+      { code: "go_ct_throat", labels: { de: "Rachen", en: "Rachen", tr: "Rachen", uk: "Rachen" }, group: "Gonorrhoe/Chlamydien" },
+      { code: "go_ct_urine", labels: { de: "Urin", en: "Urin", tr: "Urin", uk: "Urin" }, group: "Gonorrhoe/Chlamydien" },
+      { code: "go_ct_anal", labels: { de: "Rektal", en: "Rektal", tr: "Rektal", uk: "Rektal" }, group: "Gonorrhoe/Chlamydien" },
+
+      // // Chlamydien
+      // { code: "chlam_throat", labels: { de: "Rachen-CHL", en: "Rachen-CHL", tr: "Rachen-CHL", uk: "Rachen-CHL" }, group: "Chlamydien" },
+      // { code: "chlam_urine", labels: { de: "Urin-CHL", en: "Urin-CHL", tr: "Urin-CHL", uk: "Urin-CHL" }, group: "Chlamydien" },
+      // { code: "chlam_anal", labels: { de: "Rektal-CHL", en: "Rektal-CHL", tr: "Rektal-CHL", uk: "Rektal-CHL" }, group: "Chlamydien" },
+
+      // HAV
+      { code: "hav", labels: { de: "HAV", en: "HAV", tr: "HAV", uk: "HAV" }, group: "Hepatitiden" },
+      { code: "anti-hbc", labels: { de: "Anti-HBC", en: "Anti-HBC", tr: "Anti-HBC", uk: "Anti-HBC" }, group: "Hepatitiden" },
+      { code: "hcv", labels: { de: "HCV", en: "HCV", tr: "HCV", uk: "HCV" }, group: "Hepatitiden" }
+
+    ]
+  },
+
   beraterkennung: { type: "text", section: "berater" },
+  beraterkommentar: { type: "textarea", section: "berater" },
 };
 
 // map code → localized label; safe when no options (text)
@@ -273,14 +303,16 @@ const labelFor = (qid: string, code: string, lang: Lang) => {
   return opt?.labels?.[lang] ?? code;
 };
 
-// Inject PNR only for radio/checkbox
-for (const key of Object.keys(Q)) {
-  const def = Q[key];
-  if ((def.type === "radio" || def.type === "checkbox") && def.options) {
-    const o = def.options;
-    if (!o.some(x => x.code === "pnr")) o.push(PNR);
-  }
-}
+// // Inject PNR only for radio/checkbox
+// for (const key of Object.keys(Q)) {
+//   const def = Q[key];
+//   if (
+//     key !== "testanforderungen" &&
+//     (def.type === "radio" || def.type === "checkbox") && def.options) {
+//     const o = def.options;
+//     if (!o.some(x => x.code === "pnr")) o.push(PNR);
+//   }
+// }
 
 function optionsFor(opts: Opt[], lang: Lang) {
   return opts.filter(o => o.code !== "pnr").map(o => ({ value: o.code, label: o.labels[lang] ?? o.code }));
@@ -321,6 +353,46 @@ export default function EQuestionnaireWired() {
     });
   }
 
+  function handleTestanforderungChange(
+  code: string,
+  checked: boolean,
+  qid: string
+  ) {
+    setResponses((prev) => {
+      let arr = new Set<string>(prev[qid] || []);
+
+      if (checked) {
+        arr.add(code);
+
+        // Nur Beratung clears all others
+        if (code === "counsel") {
+          return { ...prev, [qid]: ["counsel"] };
+        }
+
+        // Any other clears "counsel"
+        arr.delete("counsel");
+
+        // Gonorrhoe auto-selects Chlamydien
+        if (GONO_CHLAM_MAP[code]) {
+          const chl = GONO_CHLAM_MAP[code];
+          const chlamArr = new Set<string>(prev[qid] || []);
+          chlamArr.add(chl);
+          arr.add(chl); // ensure in same set
+        }
+      } else {
+        arr.delete(code);
+
+        // Gonorrhoe auto-deselects Chlamydien
+        if (GONO_CHLAM_MAP[code]) {
+          const chl = GONO_CHLAM_MAP[code];
+          arr.delete(chl);
+        }
+      }
+
+      return { ...prev, [qid]: Array.from(arr) };
+    });
+  }
+
   const renderQuestion = (qid: string) => {
     const def = Q[qid];
     const title = titleFor(qid, lang);
@@ -356,11 +428,13 @@ export default function EQuestionnaireWired() {
               </div>
             ))}
           </RadioGroup>
-          <div className="mt-2">
-            <Button variant="link" size="sm" onClick={() => skipQuestion(qid)}>
-              {SKIP_LABEL[lang]}
-            </Button>
-          </div>
+          {qid !== "testanforderungen" && (
+            <div className="mt-2">
+              <Button variant="link" size="sm" onClick={() => skipQuestion(qid)}>
+                {SKIP_LABEL[lang]}
+              </Button>
+            </div>
+          )}
         </div>
       );
     }
@@ -380,54 +454,108 @@ export default function EQuestionnaireWired() {
       );
     }
 
-    // checkbox
-    const selected: string[] = responses[qid] || [];
-    const o = optionsFor(def.options!, lang);
-    return (
-      <div key={qid} className="mb-6" role="group" aria-labelledby={`${qid}-legend`}>
-        <h3 id={`${qid}-legend`} className="mb-2 text-lg font-medium">{title}</h3>
-        <div className={`${ANSWER_INDENT} ${OPTION_STACK}`}>
-          {o.map((item, i) => {
-            const checked = selected.includes(item.value);
-            return (
-              <div className="flex items-center space-x-2" key={`${qid}-${item.value}`}>
-                <Checkbox
-                  id={`${qid}-${i}`}
-                  checked={checked}
-                  onCheckedChange={(c) => {
-                    setResponses(prev => {
-                      const arr = new Set<string>(prev[qid] || []);
-                      if (c === true) arr.add(item.value); else arr.delete(item.value);
-                      return { ...prev, [qid]: Array.from(arr) };
-                    });
-                  }}
-                />
-                <Label htmlFor={`${qid}-${i}`}>{item.label}</Label>
-              </div>
-            );
-          })}
-          <div className="mt-2">
-            <Button variant="link" size="sm" onClick={() => skipQuestion(qid)}>
-              {SKIP_LABEL[lang]}
-            </Button>
-          </div>
-        </div>
+    if (def.type === "checkbox" && def.options) {
+  const selected: string[] = responses[qid] || [];
+  const groups = def.options.reduce((acc, opt) => {
+    const g = opt.group ?? "";
+    if (!acc[g]) acc[g] = [];
+    acc[g].push(opt);
+    return acc;
+  }, {} as Record<string, Opt[]>);
+
+  return (
+    <div key={qid} className="mb-6">
+      <h3 className="mb-2 text-lg font-medium">{titleFor(qid, lang)}</h3>
+      <div className={`${ANSWER_INDENT} `}>
+  {Object.entries(groups).map(([group, opts]) => (
+    <div key={group} className="mb-6">
+      {group && (
+        <p className="font-semibold text-sm text-blue-600 mb-1">{group}</p>
+      )}
+
+      <div
+        className={
+          qid === "testanforderungen"
+            ? "flex flex-wrap gap-x-4 gap-y-2"   // horizontal for testanforderungen
+            : "flex flex-col space-y-2"          // vertical for others
+        }
+      >
+        {opts.map((item) => {
+          const checked = selected.includes(item.code);
+          return (
+            <label
+              key={`${qid}-${item.code}`}
+              htmlFor={`${qid}-${item.code}`}
+              className="flex items-center space-x-2"
+            >
+              <Checkbox
+                id={`${qid}-${item.code}`}
+                checked={checked}
+                disabled={
+                  responses[qid]?.includes("counsel") && item.code !== "counsel"
+                }
+                onCheckedChange={(c) =>
+                  handleTestanforderungChange(item.code, c === true, qid)
+                }
+              />
+              <span>{item.labels[lang]}</span>
+            </label>
+          );
+        })}
       </div>
-    );
+
+
+    </div>
+  ))}
+  {qid !== "testanforderungen" && (
+    <div className="mt-2">
+      <Button variant="link" size="sm" onClick={() => skipQuestion(qid)}>
+        {SKIP_LABEL[lang]}
+      </Button>
+    </div>
+   )} 
+</div>
+    </div>
+  );
+}
+
   };
 
   const [activeTab, setActiveTab] = useState<"general"|"hiv"|"sexpractices"|"other"|"summary"|"berater">("general");
   const hivDisabled = responses["hiv_test"] === "no";
 
+  const QUESTION_ORDER = Object.keys(Q);
+
+  const unansweredDE = QUESTION_ORDER
+  .filter(qid => responses[qid] === undefined || responses[qid] === "" || (Array.isArray(responses[qid]) && responses[qid].length === 0))
+  .map(qid => titleFor(qid, "de"));
+
+
   const pretty = Object.fromEntries(
-    Object.entries(responses).map(([qid, val]) => {
+    QUESTION_ORDER
+    .filter(qid => responses[qid] !== undefined && responses[qid] !== "")
+    .map(qid => {
+      const val = responses[qid];
       const def = Q[qid];
-      const title = titleFor(qid, lang);
+      const title = titleFor(qid, "de");
       if (def?.options) {
-        return [title, Array.isArray(val) ? val.map(c => labelFor(qid, c, lang)) : labelFor(qid, val, lang)];
+        return [
+          title,
+          Array.isArray(val)
+            ? val.map(c => labelFor(qid, c, "de"))
+            : labelFor(qid, val, "de"),
+        ];
       }
       return [title, val];
     })
+    // Object.entries(responses).map(([qid, val]) => {
+    //   const def = Q[qid];
+    //   const title = titleFor(qid, "de");
+    //   if (def?.options) {
+    //     return [title, Array.isArray(val) ? val.map(c => labelFor(qid, c, "de")) : labelFor(qid, val, "de")];
+    //   }
+    //   return [title, val];
+    // })
   );
 
   const [submitState, setSubmitState] = useState<
@@ -495,80 +623,156 @@ function buildPayload() {
 //   }
 // }
 
+// define the order of all questions in CSV
+const QUESTION_ORDER_OUT = [
+  "besucherkennung",
+  "gender",
+  "beraterkennung",
+  "beraterkommentar",
+  "testanforderungen",  
+  "orientation",
+  "birthCountry",
+  "insurance",
+  "doctor",
+  "hiv_test",
+  "riskType",
+  "hiv_risk_selfest",
+  "sexualRiskTime",
+  "riskCountry",
+  "risk_situation",
+  "risk_situation_d1_1",
+  "risk_situation_d1_2",
+  "risk_situation_d1_3",
+  "risk_situation_d1_4",
+  "sti_history_yesno",
+  "sti_history_which",
+  "sti_history_treat",
+  "sti_history_treat_country",
+  "hepA",
+  "hepB",
+  "hepABVac",
+  "hepC",
+  "hepC_tm",
+];
+
+
 async function submitResponses() {
+
+  // validation: Besucher-ID and Beraterkennung required
+  if (!responses["besucherkennung"] || !responses["beraterkennung"]) {
+    alert("Bitte Besucher-ID und Beraterkennung eingeben, bevor Sie absenden.");
+    return;
+  }
+
   setSubmitState({ status: "submitting" });
   const payload = buildPayload();
 
   try {
-    // Prefer Tauri plugin (bypasses CORS), fall back to window.fetch in browser dev
-    const isTauri = typeof (window as any).__TAURI__ !== "undefined";
-    if (isTauri) {
-      // dynamic import so web build doesn’t break
-      const { fetch } = await import("@tauri-apps/plugin-http");
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!(res as any).ok && (res as any).status && (res as any).status >= 300) {
-        throw new Error(`HTTP ${(res as any).status}`);
+    const filePath = "Z:\\Project(e), Arbeitsbereich(e)\\Check-up Duisburg Kreis Wesel\\fuertorben";
+    // must exist: /Users/tk/js/antworten.csv
+
+    // Flatten the questionnaire into a row-oriented record
+    const flat: Record<string, string | boolean> = {
+      timestamp: payload.meta.timestamp,
+      // visitorId: payload.meta.visitorId ?? "",
+    };
+
+    for (const [qid, val] of Object.entries(payload.data)) {
+      // if (qid === "visitorId" || qid === "timestamp") continue; // ✅ skip
+      const def = Q[qid];
+      if (def?.type === "checkbox" && def.options) {
+        for (const opt of def.options) {
+          flat[`${qid}_${opt.code}`] = Array.isArray(val) && val.includes(opt.code);
+        }
+      } else {
+        flat[qid] = Array.isArray(val) ? val.join(";") : String(val ?? "");
       }
-    } else {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
     }
 
-    setSubmitState({ status: "success" });
+    // Build header and row
+    // const header = Object.keys(flat).join(",");
+    const header = [
+        "timestamp", 
+        "visitorId",
+        ...QUESTION_ORDER_OUT.flatMap(qid => {
+          const def = Q[qid];
+          if (def?.type === "checkbox" && def.options) {
+            return def.options.map(opt => `${qid}_${opt.code}`);
+          }
+          return [qid];
+        })
+      ].join(",");
 
-    // Optional: clear draft after successful submit
-    // setResponses({});
-    // localStorage.removeItem("responses_draft");
+
+    // const row = Object.keys(flat)
+    //   .map(k => {
+    //     const val = flat[k];
+    //     return typeof val === "boolean"
+    //       ? (val ? "true" : "false")
+    //       : `"${String(val ?? "").replace(/"/g, '""')}"`;
+    //   })
+    //   .join(",");
+    const flatRow: string[] = [];
+    flatRow.push(payload.meta.timestamp);
+    flatRow.push(payload.meta.visitorId ?? "");
+
+    for (const qid of QUESTION_ORDER_OUT) {
+      const def = Q[qid];
+      const val = responses[qid];
+
+      if (def?.type === "checkbox" && def.options) {
+        for (const opt of def.options) {
+          flatRow.push(Array.isArray(val) && val.includes(opt.code) ? "true" : "false");
+        }
+      } else {
+        flatRow.push(val ? `"${String(val).replace(/"/g, '""')}"` : "");
+      }
+    }
+
+    const row = flatRow.join(",");
+
+    // One single call to Rust
+    await invoke("append_csv", {
+      path: filePath,
+      row,
+      header, // plain string
+    });
+
+    // setSubmitState({ status: "success" });
+    setSubmitState({
+      status: "success",
+      message: `Besucher-ID: ${responses["besucherkennung"] || "-"}, Berater-ID: ${responses["beraterkennung"] || "-"}`
+    });
+    alert(
+      `Antwort gespeichert in CSV:\n${filePath}\n\nBesucher-ID: ${responses["besucherkennung"] || "-"}\nBerater-ID: ${responses["beraterkennung"] || "-"}`
+    );
+        
+
+    // 🔄 Reset everything for next participant
+    setResponses(prev => ({ 
+      beraterkennung: prev.beraterkennung ?? "" 
+    }));
+    setBackup({});
+    localStorage.removeItem("responses_draft");
+    // setActiveTab("general");   // go back to first tab
+        
   } catch (err: any) {
-    console.error("submit failed", err);
-    // Try to keep a local copy if running as desktop
-    try {
-      // const fs = await import("@tauri-apps/api/fs"); // works if you’re on Tauri v1; on v2 consider @tauri-apps/plugin-fs
-      // const { writeTextFile, BaseDirectory, createDir } = fs as any;
-
-      const { writeTextFile, BaseDirectory, createDir } =
-        await import("@tauri-apps/plugin-fs");
-
-      await createDir("fragebogen/outbox", {
-        dir: BaseDirectory.Document,
-        recursive: true,
-      });
-      await writeTextFile(
-        "fragebogen/outbox/queue_${Date.now()}.json",
-        JSON.stringify(payload, null, 2),
-        { dir: BaseDirectory.Document }
-      );
-
-      await createDir("Fragebogen/outbox", { dir: BaseDirectory.Document, recursive: true });
-      const filename = `fragebogen/outbox/queue_${Date.now()}.json`;
-      await writeTextFile(filename, JSON.stringify(payload, null, 2), { dir: BaseDirectory.Document });
-      setSubmitState({
-        status: "error",
-        message: "Server nicht erreichbar — eine Kopie wurde in Dokumente/fragebogen/outbox abgelegt",
-      });
-    } catch {
-      setSubmitState({
-        status: "error",
-        message: err?.message ?? "Sendung fehlgeschlagen",
-      });
+          console.error("CSV append failed", err);
+          setSubmitState({
+            status: "error",
+            message: err?.message ?? JSON.stringify(err),
+          });
     }
   }
-}
 
 
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <header className="flex items-center justify-between">
         <div className="flex flex-col items-start">
-          <span className="text-xs font-bold uppercase text-black bg-neon-green px-2 py-1 rounded">
+          <span className="text-xs font-semibold uppercase text-white 
+  bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 
+  px-3 py-1 rounded-full shadow-md">
             DEVEL {CURR_VERSION}
           </span>
           <h1 className="text-2xl font-semibold">Checkpoint Fragebogen</h1>
@@ -582,16 +786,18 @@ async function submitResponses() {
         </div>
       </header>
 
+
+
       <Tabs value={activeTab} onValueChange={(v:any)=>setActiveTab(v)}>
         <TabsList>
           <TabsTrigger value="general">Allgemein</TabsTrigger>
           <TabsTrigger value="hiv" disabled={hivDisabled} className={clsx(hivDisabled && "opacity-50")}>
-            HIV Risiko 1
+            HIV Risiko
           </TabsTrigger>
-          <TabsTrigger value="sexpractices">HIV Risiko 2</TabsTrigger>
-          <TabsTrigger value="other">Andere STIs</TabsTrigger>
+          <TabsTrigger value="sexpractices">Sexualverhalten</TabsTrigger>
+          <TabsTrigger value="other">Impfungen & Infektionen</TabsTrigger>
           <TabsTrigger value="berater">Beratereingaben</TabsTrigger>
-          <TabsTrigger value="summary">Zusammenfassung</TabsTrigger>
+          <TabsTrigger value="summary">Prüfen & Senden</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
@@ -629,26 +835,86 @@ async function submitResponses() {
             .filter(([_, v]) => v.section === "berater")
             .map(([qid]) => renderQuestion(qid))}
 
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-end">
             <Button variant="outline" onClick={() => setActiveTab("summary")}>
-              Vorschau JSON
+              Weiter zum Absenden
             </Button>
-            <Button onClick={submitResponses} disabled={submitState.status === "submitting"}>
+{/* 
+            <Button onClick={submitResponses} 
+              disabled={
+                submitState.status === "submitting" ||
+                !responses["besucherkennung"] ||
+                !responses["beraterkennung"]
+              }
+            >
               {submitState.status === "submitting" ? "Absenden…" : "Absenden"}
-            </Button>
+            </Button> */}
+
           </div>
 
-          {submitState.status === "success" && (
+          {/* {submitState.status === "success" && (
             <p className="mt-2 text-sm text-green-700">Submitted ✓</p>
           )}
           {submitState.status === "error" && (
             <p className="mt-2 text-sm text-red-700">Submission failed: {submitState.message}</p>
-          )}
+          )} */}
         </TabsContent>
 
-         <TabsContent value="summary">
-          <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">{JSON.stringify(pretty, null, 2)}</pre>
+        <TabsContent value="summary">
+          <h3 className="font-semibold mb-2">Beantwortet:</h3>
+          <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">
+            {JSON.stringify(pretty, null, 2)}
+          </pre>
+
+          <h3 className="font-semibold mt-4 mb-2">Noch offen:</h3>
+          <ul className="list-disc pl-5 text-sm">
+            {unansweredDE.map(q => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
+
+          <div className="mt-4 flex flex-col items-end space-y-2">
+          <Button
+            onClick={submitResponses}
+            disabled={
+              submitState.status === "submitting" ||
+              !responses["besucherkennung"] ||
+              !responses["beraterkennung"]
+            }
+          >
+            {submitState.status === "submitting" ? "Absenden…" : "Absenden"}
+          </Button>
+
+
+          {!responses["besucherkennung"] && (
+            <p className="text-sm text-red-600 text-right">
+              Absenden ist nur möglich, wenn eine <strong>Besucher-ID</strong> eingetragen ist.
+            </p>
+          )}
+
+          {!responses["beraterkennung"] && (
+            <p className="text-sm text-red-600 text-right">
+              Absenden ist nur möglich, wenn eine <strong>Beraterkennung</strong> eingetragen ist.
+          </p>
+          )}
+        </div>
+
+        {submitState.status === "success" && (
+          <p className="mt-2 text-sm text-green-700 text-right">
+            {submitState.message} ✓ 
+          </p>
+        )}
+
+        {submitState.status === "error" && (
+          <p className="mt-2 text-sm text-red-700 text-right">
+            Submission failed: {submitState.message}
+          </p>
+        )}
         </TabsContent>
+
+         {/* <TabsContent value="summary">
+          <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">{JSON.stringify(pretty, null, 2)}</pre>
+        </TabsContent> */}
       </Tabs>
     </div>
   );
