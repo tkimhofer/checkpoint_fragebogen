@@ -31,11 +31,11 @@ export function AppBurger({
   lang,
   onLangChange,
   version,
-//   releaseUrl,          // e.g. "https://github.com/org/repo/releases/latest"
-  repoUrl,             // e.g. "https://github.com/org/repo"
-  contactEmail,        // e.g. "kontakt@example.org"
-  endpoint,            // optional – if you still want to show API info
-  onClearDraft,        // optional – clear local draft
+//   releaseUrl,  
+  repoUrl, 
+  contactEmail,
+  endpoint,
+  onClearDraft,
 }: {
   lang: Lang;
   onLangChange: (l: Lang) => void;
