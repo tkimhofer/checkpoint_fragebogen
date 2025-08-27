@@ -18,15 +18,20 @@ import { YesNoSeparatedChips } from "@/components/ui/yesNoModeChips";
 import { YesNoChips } from "@/components/ui/yesNoChips";
 import { StiHistoryBlock } from "@/components/ui/StiHistoryBlock";
 import { VaxInfectionChips } from "@/components/ui/vaxInfectionChips";
+import { BrandTheme, BrandPage, BrandHeader } from "@/components/ui/brandTheme";
+import { AppBurger } from "@/components/ui/appBurger";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
+// import { Toaster } from "@/components/ui/toaster";
 
 
 
-const CURR_VERSION = "v0.4";
+const CURR_VERSION = "v0.5";
 // ---- submission config ----
 const API_HOST = "192.168.10.108";
 const API_PORT = 8000;
 const API_PATH = "/api/questionnaire";
-const ENDPOINT = `http://${API_HOST}:${API_PORT}${API_PATH}`;
+// const ENDPOINT = `http://${API_HOST}:${API_PORT}${API_PATH}`;
 const SCHEMA_VERSION = 1;                   // bump if your question set changes
 const SUBMIT_LABELS = false;                // true -> submit localized labels instead of codes
 
@@ -329,7 +334,7 @@ const Q: Record<string, QDef> = {
   // sex_birth: { type: "radio", options: SEX_BIRTH, section: "general" },
   // age: { ... },
 
-  insurance: { type: "radio", options: YES_NO_UNKNOWN, section: "general" },
+  insurance: { type: "radio", options: YES_NO, section: "general" },
   doctor: { type: "radio", options: YES_NO, section: "general" },
   hiv_test: { type: "radio", options: YES_NO, section: "general" },
 
@@ -433,6 +438,7 @@ function optionsFor(opts: Opt[], lang: Lang) {
 }
 
 export default function EQuestionnaireWired() {
+  const { toast } = useToast();
   const [lang, setLang] = useState<Lang>("de");
   const [responses, setResponses] = useState<Record<string, any>>(() => {
     const saved = localStorage.getItem("responses_draft");
@@ -1016,14 +1022,7 @@ export default function EQuestionnaireWired() {
       }
       return [title, val];
     })
-    // Object.entries(responses).map(([qid, val]) => {
-    //   const def = Q[qid];
-    //   const title = titleFor(qid, "de");
-    //   if (def?.options) {
-    //     return [title, Array.isArray(val) ? val.map(c => labelFor(qid, c, "de")) : labelFor(qid, val, "de")];
-    //   }
-    //   return [title, val];
-    // })
+  
   );
 
   const [submitState, setSubmitState] = useState<
@@ -1129,6 +1128,9 @@ const QUESTION_ORDER_OUT = [
   "hepC_tm",
 ];
 
+const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+
 
 async function submitResponses() {
 
@@ -1166,7 +1168,7 @@ async function submitResponses() {
   const payload = buildPayload();
 
   try {
-    const filePath = "Z:\\Project(e), Arbeitsbereich(e)\\Check-up Duisburg Kreis Wesel\\fuertorben";
+    const filePath = "Z:\\Projekt(e), Arbeitsbereich(e)\\Check-up Duisburg Kreis Wesel\\fuertorben\\chekpoint_daten.csv";
     // must exist: /Users/tk/js/antworten.csv
 
     // // Flatten the questionnaire into a row-oriented record
@@ -1206,28 +1208,6 @@ async function submitResponses() {
       })
     ].join(",");
 
-    // const header = [
-    //     "timestamp", 
-    //     "visitorId",
-    //     ...QUESTION_ORDER_OUT.flatMap(qid => {
-    //       const def = Q[qid];
-    //       if (def?.type === "checkbox" && def.options) {
-    //         return def.options.map(opt => `${qid}_${opt.code}`);
-    //       }
-    //       return [qid];
-    //     })
-    //   ].join(",");
-
-
-    // const row = Object.keys(flat)
-    //   .map(k => {
-    //     const val = flat[k];
-    //     return typeof val === "boolean"
-    //       ? (val ? "true" : "false")
-    //       : `"${String(val ?? "").replace(/"/g, '""')}"`;
-    //   })
-    //   .join(",");
-
     const flatRow: string[] = [];
     flatRow.push(payload.meta.timestamp);
     flatRow.push(payload.meta.visitorId ?? "");
@@ -1266,19 +1246,6 @@ async function submitResponses() {
       }
     }
 
-    // for (const qid of QUESTION_ORDER_OUT) {
-    //   const def = Q[qid];
-    //   const val = responses[qid];
-
-    //   if (def?.type === "checkbox" && def.options) {
-    //     for (const opt of def.options) {
-    //       flatRow.push(Array.isArray(val) && val.includes(opt.code) ? "true" : "false");
-    //     }
-    //   } else {
-    //     flatRow.push(val ? `"${String(val).replace(/"/g, '""')}"` : "");
-    //   }
-    // }
-
     const row = flatRow.join(",");
 
     // One single call to Rust
@@ -1293,9 +1260,11 @@ async function submitResponses() {
       status: "success",
       message: `Besucher-ID: ${responses["besucherkennung"] || "-"}, Berater-ID: ${responses["beraterkennung"] || "-"}`
     });
-    alert(
-      `Antwort gespeichert in CSV:\n${filePath}\n\nBesucher-ID: ${responses["besucherkennung"] || "-"}\nBerater-ID: ${responses["beraterkennung"] || "-"}`
-    );
+
+  
+    // alert(
+    //   `Antwort gespeichert in CSV:\n${filePath}\n\nBesucher-ID: ${responses["besucherkennung"] || "-"}\nBerater-ID: ${responses["beraterkennung"] || "-"}`
+    // );
         
 
     // 🔄 Reset everything for next participant
@@ -1304,7 +1273,13 @@ async function submitResponses() {
     }));
     setBackup({});
     localStorage.removeItem("responses_draft");
-    // setActiveTab("general");   // go back to first tab
+    setActiveTab("general");   // go back to first tab
+
+    toast({
+      title: "Gespeichert",
+      description: `Antwort gespeichert in CSV:\n${filePath}\n\nBesucher-ID: ${responses["besucherkennung"] || "-"}\nBerater-ID: ${responses["beraterkennung"] || "-"}`,
+      duration: 2500, // optional
+    });
         
   } catch (err: any) {
           console.error("CSV append failed", err);
@@ -1312,190 +1287,158 @@ async function submitResponses() {
             status: "error",
             message: err?.message ?? JSON.stringify(err),
           });
+          toast({
+            variant: "destructive",
+            title: "Fehler beim Speichern",
+            description: String(err?.message ?? "Unbekannter Fehler"),
+          });
     }
   }
 
   return (
-    <Theme 
-      accentColor="green" 
-      grayColor="olive" 
-      radius="large" 
-      scaling="95%" 
-      appearance="inherit" 
-      panelBackground="translucent"
-    >
-    <div className="max-w-3xl mx-auto p-4 space-y-4">
-      <header className="flex items-center justify-between">
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-semibold uppercase text-white 
-  bg-gradient-to-r from-indigo-500 to-purple-500 
-  px-3 py-1 rounded-full shadow-md">
-            DEVEL {CURR_VERSION}
-          </span>
-          <h1 className="text-2xl font-semibold">Checkpoint Fragebogen</h1>
-        </div>
-        <div className="flex items-center space-x-2">
-          {(["de","en","tr","uk"] as Lang[]).map(l => (
-            <Button key={l} variant={l === lang ? "default" : "outline"} onClick={() => setLang(l)} aria-pressed={l === lang}>
-              {l.toUpperCase()}
-            </Button>
-          ))}
-        </div>
-      </header>
+    <BrandTheme /* dark={false} background */>
+      <BrandPage>
+        <BrandHeader
+          logoSrc="/logo-ah-91db5ab3.png"
+          // logoSrc="/BuTAH-8c0843ce.jpeg"
+          right={
+            
+            <AppBurger
+              lang={lang}
+              onLangChange={(l) => setLang(l)}
+              version={CURR_VERSION}
+              // releaseUrl="https://github.com/<org>/<repo>/releases/latest"
+              repoUrl="https://github.com/tkimhofer/checkpoint_fragebogen/issues"
+              contactEmail="tkimhofer@gmail.com"
+              // endpoint={ENDPOINT}
+              onClearDraft={() => {
+                setResponses(prev => ({ beraterkennung: prev.beraterkennung ?? "" }));
+                localStorage.removeItem("responses_draft");
+              }}
+            />
+          }
+        />
 
+        {/* old Theme header kept here just for reference
+        <span className="text-xs ...">DEVEL {CURR_VERSION}</span>
+        */}
 
+        <Tabs
+          value={activeTab}
+          onValueChange={(v: any) => { setActiveTab(v); scrollTop(); }}
+          orientation="vertical"
+          className="flex items-start gap-6"
+        >
+          <TabsList className="sticky top-4 z-20 flex h-auto w-56 flex-col items-stretch justify-start p-0 gap-1
+                              max-h-[calc(100vh-1rem)] overflow-auto bg-background/80 backdrop-blur
+                              supports-[backdrop-filter]:bg-background/60 self-start">
+            <TabsTrigger value="general" className="justify-start">Allgemein</TabsTrigger>
+            <TabsTrigger value="hiv" disabled={hivDisabled} className={clsx("justify-start", hivDisabled && "opacity-50")}>
+              HIV Risiko
+            </TabsTrigger>
+            <TabsTrigger value="sexpractices" className="justify-start">Sexualverhalten</TabsTrigger>
+            <TabsTrigger value="other" className="justify-start">Impfungen &amp; Infektionen</TabsTrigger>
+            <TabsTrigger value="berater" className="justify-start">Beratereingaben</TabsTrigger>
+            <TabsTrigger value="summary" className="justify-start">Prüfen &amp; Senden</TabsTrigger>
+          </TabsList>
 
-      <Tabs value={activeTab} onValueChange={(v:any)=>setActiveTab(v)}>
-        <TabsList>
-          <TabsTrigger value="general">Allgemein</TabsTrigger>
-          <TabsTrigger value="hiv" disabled={hivDisabled} className={clsx(hivDisabled && "opacity-50")}>
-            HIV Risiko
-          </TabsTrigger>
-          <TabsTrigger value="sexpractices">Sexualverhalten</TabsTrigger>
-          <TabsTrigger value="other">Impfungen & Infektionen</TabsTrigger>
-          <TabsTrigger value="berater">Beratereingaben</TabsTrigger>
-          <TabsTrigger value="summary">Prüfen & Senden</TabsTrigger>
-        </TabsList>
+          {/* Right: content area */}
+          <div className="flex-1">
+            <TabsContent value="general">
+              {Object.entries(Q).filter(([_, v]) => v.section === "general").map(([qid]) => renderQuestion(qid))}
+              <div className="flex justify-end">
+                <Button onClick={() => { setActiveTab("hiv"); scrollTop(); }}>Weiter zu: HIV Risiko</Button>
+              </div>
+            </TabsContent>
 
-        <TabsContent value="general">
-          {Object.entries(Q).filter(([_,v])=>v.section==="general").map(([qid]) => renderQuestion(qid))}
-          <div className="flex justify-end">
-            <Button onClick={()=>setActiveTab("hiv")}>Weiter zu: HIV Risiko</Button>
-          </div>
-        </TabsContent>
+            <TabsContent value="hiv">
+              {Object.entries(Q).filter(([_, v]) => v.section === "hiv").map(([qid]) => renderQuestion(qid))}
+              <div className="flex justify-end">
+                <Button onClick={() => { setActiveTab("sexpractices"); scrollTop(); }}>Weiter zu: Sexualverhalten</Button>
+              </div>
+            </TabsContent>
 
-        <TabsContent value="hiv">
-          {Object.entries(Q).filter(([_,v])=>v.section==="hiv").map(([qid]) => renderQuestion(qid))}
-          <div className="flex justify-end">
-            <Button onClick={()=>setActiveTab("sexpractices")}>Weiter zu: Sexualverhalten</Button>
-          </div>
-        </TabsContent>
+            <TabsContent value="sexpractices">
+              <h1 className="mb-8 text-l font-semibold">
+                Sofern ein Risiko darin bestand, kein Kondom benutzt zu haben, welche Risikosituation(en) hattest Du für HIV und anderen STI's?
+              </h1>
+              {Object.entries(Q).filter(([_, v]) => v.section === "sexpractices").map(([qid]) => renderQuestion(qid))}
+              <div className="flex justify-end">
+                <Button onClick={() => { setActiveTab("other"); scrollTop(); }}>Weiter zu: Impfungen &amp; Infektionen</Button>
+              </div>
+            </TabsContent>
 
-        <TabsContent value="sexpractices">
-          <h1 className="mb-8 text-l font-semibold">Sofern ein Risiko darin bestand, kein Kondom benutzt zu haben, welche Risikosituation(en) hattest Du für HIV und anderen STI's?</h1>
-          {Object.entries(Q).filter(([_,v])=>v.section==="sexpractices").map(([qid]) => renderQuestion(qid))}
-          <div className="flex justify-end">
-            <Button onClick={()=>setActiveTab("other")}>Weiter zu: Impfungen & Infektionen</Button>
-          </div>
-        </TabsContent>
+            <TabsContent value="other">
+              {Object.entries(Q).filter(([_, v]) => v.section === "other").map(([qid]) => renderQuestion(qid))}
+              <div className="flex justify-end">
+                <Button onClick={() => { setActiveTab("berater"); scrollTop(); }}>Weiter zu: Beratereingaben</Button>
+              </div>
+            </TabsContent>
 
-        <TabsContent value="other">
-          {Object.entries(Q).filter(([_,v])=>v.section==="other").map(([qid]) => renderQuestion(qid))}
-          <div className="flex justify-end">
-            <Button onClick={()=>setActiveTab("summary")}>Weiter zu: Beratereingaben</Button>
-          </div>
-        </TabsContent>
+            <TabsContent value="berater">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                <div className="space-y-6 md:col-span-1">
+                  {["besucherkennung", "beraterkennung", "beraterkommentar"].map((qid) => renderQuestion(qid))}
+                </div>
+                <div className="space-y-6 md:col-span-2">
+                  {renderQuestion("testanforderungen")}
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-end">
+                <Button variant="outline" onClick={() => { setActiveTab("summary"); scrollTop(); }}>
+                  Weiter zu: Prüfen &amp; Senden
+                </Button>
+              </div>
+            </TabsContent>
 
-       
+            <TabsContent value="summary">
+              <h3 className="font-semibold mb-2">Beantwortet:</h3>
+              <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">
+                {JSON.stringify(pretty, null, 2)}
+              </pre>
 
-        <TabsContent value="berater">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            {/* Left column: text inputs */}
-            <div className="space-y-6 md:col-span-1">
-              {["besucherkennung", "beraterkennung", "beraterkommentar"].map((qid) =>
-                renderQuestion(qid)
+              <h3 className="font-semibold mt-4 mb-2">Noch offen:</h3>
+              <ul className="list-disc pl-5 text-sm">
+                {unansweredDE.map(q => (<li key={q}>{q}</li>))}
+              </ul>
+
+              <div className="mt-4 flex flex-col items-end space-y-2">
+                <Button
+                  onClick={submitResponses}
+                  disabled={
+                    submitState.status === "submitting" ||
+                    !responses["besucherkennung"] ||
+                    !responses["beraterkennung"]
+                  }
+                >
+                  {submitState.status === "submitting" ? "Absenden…" : "Absenden"}
+                </Button>
+
+                {!responses["besucherkennung"] && (
+                  <p className="text-sm text-red-600 text-right">
+                    Absenden ist nur möglich, wenn eine <strong>Besucher-ID</strong> eingetragen ist.
+                  </p>
+                )}
+                {!responses["beraterkennung"] && (
+                  <p className="text-sm text-red-600 text-right">
+                    Absenden ist nur möglich, wenn eine <strong>Beraterkennung</strong> eingetragen ist.
+                  </p>
+                )}
+              </div>
+
+              {submitState.status === "success" && (
+                <p className="mt-2 text-sm text-green-700 text-right">{submitState.message} ✓</p>
               )}
-            </div>
-
-            {/* Right column: Testanforderungen */}
-            <div className="space-y-6 md:col-span-2">
-              {renderQuestion("testanforderungen")}
-            </div>
+              {submitState.status === "error" && (
+                <p className="mt-2 text-sm text-red-700 text-right">Submission failed: {submitState.message}</p>
+              )}
+            </TabsContent>
           </div>
+        </Tabs>
+      </BrandPage>
 
-          <div className="mt-4 flex items-center justify-end">
-            <Button variant="outline" onClick={() => setActiveTab("summary")}>
-              Weiter zu: Prüfen & Senden
-            </Button>
-          </div>
-          {/* {Object.entries(Q)
-            .filter(([_, v]) => v.section === "berater")
-            .map(([qid]) => renderQuestion(qid))}
-
-          <div className="mt-4 flex items-center justify-end">
-            <Button variant="outline" onClick={() => setActiveTab("summary")}>
-              Weiter zum Absenden
-            </Button> */}
-{/* 
-            <Button onClick={submitResponses} 
-              disabled={
-                submitState.status === "submitting" ||
-                !responses["besucherkennung"] ||
-                !responses["beraterkennung"]
-              }
-            >
-              {submitState.status === "submitting" ? "Absenden…" : "Absenden"}
-            </Button> */}
-
-          {/* </div> */}
-
-          {/* {submitState.status === "success" && (
-            <p className="mt-2 text-sm text-green-700">Submitted ✓</p>
-          )}
-          {submitState.status === "error" && (
-            <p className="mt-2 text-sm text-red-700">Submission failed: {submitState.message}</p>
-          )} */}
-        </TabsContent>
-
-        
-
-        <TabsContent value="summary">
-          <h3 className="font-semibold mb-2">Beantwortet:</h3>
-          <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">
-            {JSON.stringify(pretty, null, 2)}
-          </pre>
-
-          <h3 className="font-semibold mt-4 mb-2">Noch offen:</h3>
-          <ul className="list-disc pl-5 text-sm">
-            {unansweredDE.map(q => (
-              <li key={q}>{q}</li>
-            ))}
-          </ul>
-
-          <div className="mt-4 flex flex-col items-end space-y-2">
-          <Button
-            onClick={submitResponses}
-            disabled={
-              submitState.status === "submitting" ||
-              !responses["besucherkennung"] ||
-              !responses["beraterkennung"]
-            }
-          >
-            {submitState.status === "submitting" ? "Absenden…" : "Absenden"}
-          </Button>
-
-
-          {!responses["besucherkennung"] && (
-            <p className="text-sm text-red-600 text-right">
-              Absenden ist nur möglich, wenn eine <strong>Besucher-ID</strong> eingetragen ist.
-            </p>
-          )}
-
-          {!responses["beraterkennung"] && (
-            <p className="text-sm text-red-600 text-right">
-              Absenden ist nur möglich, wenn eine <strong>Beraterkennung</strong> eingetragen ist.
-          </p>
-          )}
-        </div>
-
-        {submitState.status === "success" && (
-          <p className="mt-2 text-sm text-green-700 text-right">
-            {submitState.message} ✓ 
-          </p>
-        )}
-
-        {submitState.status === "error" && (
-          <p className="mt-2 text-sm text-red-700 text-right">
-            Submission failed: {submitState.message}
-          </p>
-        )}
-        </TabsContent>
-
-         {/* <TabsContent value="summary">
-          <pre className="text-xs bg-muted p-3 rounded-md overflow-auto">{JSON.stringify(pretty, null, 2)}</pre>
-        </TabsContent> */}
-      </Tabs>
-    </div>
-    </Theme>
+      {/* Toasts viewport */}
+      <Toaster />
+    </BrandTheme>
   );
 }
