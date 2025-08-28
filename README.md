@@ -59,7 +59,8 @@ Runs the app with hot-reloading in a Tauri window.
 
 ### **Production Build**
 ```bash
-pnpm tauri build
+pnpm tauri build # dmg
+cargo tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc # exe
 ```
 Generates `.exe` (Windows) and `.dmg` (macOS) installers.
 
