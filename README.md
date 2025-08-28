@@ -4,7 +4,7 @@
 
 The app is packaged as native executables for **Windows** (`.exe`) and **macOS** (`.dmg`) using **Tauri**, ensuring fast performance, and local-first security. 
 
-**The app is currently under development — for testing the most recent version, download the appropriate binary (`.exe` for Windows or `.dmg` for macOS) from the **Releases** section on the right-hand side of this page.
+**The app is currently under development** — for testing the most recent version, download the appropriate binary (`.exe` for Windows or `.dmg` for macOS) from the **Releases** section on the right-hand side of this page.
 
 ---
 
