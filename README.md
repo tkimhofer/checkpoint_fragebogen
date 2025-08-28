@@ -53,7 +53,7 @@ package.json      # Project scripts & dependencies
 ### **Development**
 ```bash
 pnpm install
-pnpm tauri dev
+cargo tauri dev
 ```
 Runs the app with hot-reloading in a Tauri window.
 
