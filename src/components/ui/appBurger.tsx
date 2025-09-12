@@ -90,7 +90,7 @@ export function AppBurger({
                             <div className="ml-auto">
                             <ReactCountryFlag
                                 countryCode={COUNTRY_FOR_LANG[l]}
-                                svg
+                                // svg
                                 style={{ width: "1.25rem", height: "1rem", borderRadius: "2px" }}
                                 title={LANG_NAMES[l]}
                                 aria-label={`${LANG_NAMES[l]} flag`}
@@ -130,7 +130,8 @@ export function AppBurger({
 
                 {/* Links as plain anchors (very small) */}
                 <div className="flex flex-col gap-1">
-                {repoUrl && (
+                {
+                repoUrl && (
                     <a
                     href={repoUrl}
                     target="_blank"
@@ -138,7 +139,7 @@ export function AppBurger({
                     className="inline-flex items-center gap-1 hover:text-foreground underline underline-offset-2"
                     >
                     {/* <Github className="h-3 w-3" /> */}
-                    Probleme & Vorschläge (GitHub)
+                    {/* Probleme & Vorschläge (GitHub) */}
                     </a>
                 )}
                 
@@ -148,7 +149,7 @@ export function AppBurger({
                     className="inline-flex items-center gap-1 hover:text-foreground underline underline-offset-2"
                     >
                     {/* <Mail className="h-3 w-3" /> */}
-                    Kontakt: {contactEmail}
+                    {contactEmail}
                     </a>
                 )}
                 

@@ -23,10 +23,12 @@ import { AppBurger } from "@/components/ui/appBurger";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 // import { Toaster } from "@/components/ui/toaster";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 
 
-
-const CURR_VERSION = "v0.5";
+const CURR_VERSION = "v0.6";
 // ---- submission config ----
 const API_HOST = "192.168.10.108";
 const API_PORT = 8000;
@@ -86,6 +88,11 @@ function QuestionHeader({
     </div>
   );
 }
+
+
+
+
+
 const QTITLE: Record<string, Record<Lang, string>> = {
   gender:            { de: "Wie beschreibst Du deine derzeitige Geschlechtsidentität?", en: "How do you describe your current gender identity?", tr: "Şu anki cinsiyet kimliğini nasıl tanımlarsın?", uk: "Як ти описуєш свою поточну гендерну ідентичність?" },
   orientation:       { de: "Wie beschreibst Du deine sexuelle Orientierung?", en: "How do you describe your sexual orientation?", tr: "Cinsel yönelimini nasıl tanımlarsın?", uk: "Як ти описуєш свою сексуальну орієнтацію?" },
@@ -396,6 +403,7 @@ const Q: Record<string, QDef> = {
       { code: "go_ct_throat", labels: { de: "Rachen", en: "Rachen", tr: "Rachen", uk: "Rachen" }, group: "Gonorrhoe/Chlamydien" },
       { code: "go_ct_urine", labels: { de: "Urin", en: "Urin", tr: "Urin", uk: "Urin" }, group: "Gonorrhoe/Chlamydien" },
       { code: "go_ct_anal", labels: { de: "Rektal", en: "Rektal", tr: "Rektal", uk: "Rektal" }, group: "Gonorrhoe/Chlamydien" },
+      { code: "go_ct_vag", labels: { de: "Vaginal", en: "Vaginal", tr: "Vaginal", uk: "Vaginal" }, group: "Gonorrhoe/Chlamydien" },
 
       // // Chlamydien
       // { code: "chlam_throat", labels: { de: "Rachen-CHL", en: "Rachen-CHL", tr: "Rachen-CHL", uk: "Rachen-CHL" }, group: "Chlamydien" },
@@ -436,6 +444,8 @@ const FOUR_MODE_QIDS = ["risk_situation_d1_1", "risk_situation_d1_2"] as const;
 function optionsFor(opts: Opt[], lang: Lang) {
   return opts.filter(o => o.code !== "pnr").map(o => ({ value: o.code, label: o.labels[lang] ?? o.code }));
 }
+
+
 
 export default function EQuestionnaireWired() {
   const { toast } = useToast();
@@ -1295,6 +1305,31 @@ async function submitResponses() {
     }
   }
 
+  type Section = "general" | "hiv" | "sexpractices" | "other" | "berater" | "summary";
+
+  const SECTION_TITLES: Record<Section, string> = {
+    general: "Allgemein",
+    hiv: "HIV Risiko",
+    sexpractices: "Sexualverhalten",
+    other: "Impfungen & Infektionen",
+    berater: "Beratereingaben",
+    summary: "Prüfen & Senden",
+  };
+
+  const qidsIn = (s: Section) =>
+    Object.entries(Q).filter(([_, v]) => v.section === s).map(([qid]) => qid);
+
+  const isAnswered = (qid: string) => {
+    const v = responses[qid];
+    return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== "";
+  };
+
+  const totalInSection = Math.max(1, qidsIn(activeTab as Section).length);
+  const answeredInSection = qidsIn(activeTab as Section).filter(isAnswered).length;
+  const percent = Math.round((answeredInSection / totalInSection) * 100);
+
+
+
   return (
     <BrandTheme /* dark={false} background */>
       <BrandPage>
@@ -1302,14 +1337,13 @@ async function submitResponses() {
           logoSrc="/logo-ah-91db5ab3.png"
           // logoSrc="/BuTAH-8c0843ce.jpeg"
           right={
-            
             <AppBurger
               lang={lang}
               onLangChange={(l) => setLang(l)}
               version={CURR_VERSION}
               // releaseUrl="https://github.com/<org>/<repo>/releases/latest"
               repoUrl="https://github.com/tkimhofer/checkpoint_fragebogen/issues"
-              contactEmail="tkimhofer@gmail.com"
+              contactEmail="feedback@tkimhofer.dev"
               // endpoint={ENDPOINT}
               onClearDraft={() => {
                 setResponses(prev => ({ beraterkennung: prev.beraterkennung ?? "" }));
@@ -1319,19 +1353,65 @@ async function submitResponses() {
           }
         />
 
+        
         {/* old Theme header kept here just for reference
         <span className="text-xs ...">DEVEL {CURR_VERSION}</span>
         */}
+        {/* Sticky section header / progress */}
+        <div className="sticky top-0 z-40 -mx-6 mb-4 px-6 py-3
+             bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60
+             border-b">
+          <div className="flex items-center gap-4">
+            <div className="min-w-[220px]">
+              <div className="text-sm font-semibold">{SECTION_TITLES[activeTab as Section]}</div>
+              <div className="text-xs text-muted-foreground">
+                {answeredInSection}/{totalInSection} beantwortet
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <Progress value={percent} className="h-2" />
+            </div>
+
+            <Separator orientation="vertical" className="hidden md:block h-6" />
+
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="hidden sm:inline text-xs text-muted-foreground cursor-default">
+                    Deine Antworten werden lokal zwischengespeichert.
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-sm">
+                  Automatische Zwischenspeicherung (lokal). Über „Prüfen &amp; Senden“ werden Daten exportiert.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
+            <span className="ml-auto inline-flex items-center rounded-full px-2.5 py-0.5
+                            text-[11px] font-semibold uppercase tracking-wide
+                            bg-primary/10 text-primary ring-1 ring-primary/20">
+              DEVEL {CURR_VERSION}
+            </span>
+          </div>
+        </div>
+
 
         <Tabs
           value={activeTab}
-          onValueChange={(v: any) => { setActiveTab(v); scrollTop(); }}
+          onValueChange={(v:any)=>{ setActiveTab(v); scrollTop(); }}
           orientation="vertical"
           className="flex items-start gap-6"
         >
-          <TabsList className="sticky top-4 z-20 flex h-auto w-56 flex-col items-stretch justify-start p-0 gap-1
-                              max-h-[calc(100vh-1rem)] overflow-auto bg-background/80 backdrop-blur
-                              supports-[backdrop-filter]:bg-background/60 self-start">
+          <TabsList className="
+              sticky z-20 top-[72px] md:top-[88px]   /* sit below the section bar */
+              flex h-auto w-56 flex-col items-stretch justify-start
+              p-0 gap-1
+              max-h-[calc(100vh-72px-1rem)] md:max-h-[calc(100vh-88px-1rem)]
+              overflow-auto
+              bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60
+              self-start
+            ">
             <TabsTrigger value="general" className="justify-start">Allgemein</TabsTrigger>
             <TabsTrigger value="hiv" disabled={hivDisabled} className={clsx("justify-start", hivDisabled && "opacity-50")}>
               HIV Risiko
@@ -1360,7 +1440,7 @@ async function submitResponses() {
 
             <TabsContent value="sexpractices">
               <h1 className="mb-8 text-l font-semibold">
-                Sofern ein Risiko darin bestand, kein Kondom benutzt zu haben, welche Risikosituation(en) hattest Du für HIV und anderen STI's?
+                Sofern ein Risiko darin bestand, kein Kondom benutzt zu haben, welche Risikosituation(en) hattest Du?
               </h1>
               {Object.entries(Q).filter(([_, v]) => v.section === "sexpractices").map(([qid]) => renderQuestion(qid))}
               <div className="flex justify-end">
