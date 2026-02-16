@@ -158,61 +158,16 @@ function formatTimestampDE(ts?: string) {
 
 export default function LabWorkspace({
   onOpenEntry,
-  // backend,
-  // setBackend,
-  // dataFolder,
-  // setDataFolder,
+
 }: {
   onOpenEntry: (payloadData: any, meta?: { entryId?: string; createdAt?: string }) => void;
-  // backend: BackendTarget;
-  // setBackend: React.Dispatch<React.SetStateAction<BackendTarget>>;
-  // dataFolder: string | null;
-  // setDataFolder: React.Dispatch<React.SetStateAction<string | null>>;
+ 
 }) {
 
   const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
   const [items, setItems] = React.useState<EntryListItem[]>([]);
   const [loading, setLoading] = React.useState(false);
   const apiBase = "http://localhost:8000";
-
-  // const handleLoadEntries = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const list = await fetchEntries(apiBase);
-  //     setItems(list);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const handleLoadEntries = async () => {
-  //   setLoading(true);
-  //   try {
-  //     let list: EntryListItem[] = [];
-
-  //     if (backend === "datenbank") {
-  //       list = await fetchEntries(apiBase);
-  //     } else {
-  //       // backend === "json"
-  //       if (!dataFolder) {
-  //         console.warn("backend=json but dataFolder is not set");
-  //         list = [];
-  //       } else {
-  //         // Lazy import so Tauri fs code is only loaded when actually used
-  //         const mod = await import("@/lib/api/entries"); 
-  //         // ^ adjust path to wherever your file-loader lives
-  //         list = await mod.fetchEntriesFromFiles(dataFolder);
-  //       }
-  //     }
-
-  //     setItems(list);
-  //   } catch (err) {
-  //     console.error("Failed to load entries:", err);
-  //     setItems([]);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleLoadEntries = async () => {
     setLoading(true);
@@ -346,10 +301,6 @@ export default function LabWorkspace({
 
   const { meta } = useAppSettings();
 
-
-
-  
-  console.log('items', items);
   return (
     <BrandTheme>
       <BrandPage>

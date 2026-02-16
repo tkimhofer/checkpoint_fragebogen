@@ -16,14 +16,14 @@ import { YesNoChips } from "@/components/ui/yesNoChips";
 import { StiHistoryBlock } from "@/components/ui/sti_history_block";
 import { VaxInfectionChips } from "@/components/ui/vaxInfectionChips";
 import { BrandTheme, BrandPage, BrandHeader } from "@/components/ui/brandTheme";
-import { AppBurger } from "@/components/ui/app_burger";
+// import { AppBurger } from "@/components/ui/app_burger";
 import { AppSettingsSheet } from "@/components/ui/appSettingsSheet";
 import { Toaster } from "@/components/ui/toaster";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { TwoInputRow } from "@/components/ui/besucher_id_pls";
-import type { Question, QuestionType } from "@/components/domain/fragebogen/types";
+import type { Question, } from "@/components/domain/fragebogen/types";
 import { useAppSettings } from "@/AppSettings";
 
 // import { getVarsWithQuestionNo, isEmptyAnswer, isSkipped } from "@/components/domain/fragebogen/derive";
@@ -35,7 +35,7 @@ import { useAppSettings } from "@/AppSettings";
 
 import * as C from "@/i18n/translations"; // labels like SKIP_LABEL etc live here now
 import { QUESTION_BY_QID, qidsBySection } from "@/components/domain/fragebogen/bank";
-import { titleFor, questionNo, optionsFor, displayValue } from "@/components/domain/fragebogen/i18n";
+import { titleFor, questionNo, optionsFor, } from "@/components/domain/fragebogen/i18n";
 import { getVarsWithQuestionNo, isEmptyAnswer, isSkipped } from "@/components/domain/fragebogen/derive";
 
 
@@ -60,7 +60,7 @@ const LINK_MUTED   = "text-muted-foreground hover:text-foreground";
 export const OTHER_CODE = "other" as const;
 
 
-import type { BackendTarget } from "@/components/ui/exportSelector";
+// import type { BackendTarget } from "@/components/ui/exportSelector";
 // import { text } from "stream/consumers";
 
 /// defining context for ui rendering based on INPUT TYPE, QID, COND. RULEs
@@ -99,9 +99,16 @@ export default function CollectorWorkspace({
   onCloseReadOnly?: () => void;
 }) {
 
+
+
+  //// get keys for schema
+  // const test = getVarsWithQuestionNo(responses)
+  // console.log("responses", responses)
+  const { meta } = useAppSettings();
+
   // console.log('openedEntryMeta', openedEntryMeta)
-  const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
-  const { toast, lang, setLang, responses, setResponses, backup, setBackup } =
+  const { backend, dataFolder, lang, setLang} = useAppSettings();
+  const { toast, responses, setResponses, backup, setBackup } =
     useQuestionnaireState(LOCAL_STORE_VAR);
 
   React.useEffect(() => {
@@ -121,8 +128,6 @@ export default function CollectorWorkspace({
     onRehydrated?.(); // clear trigger
   }, [rehydrateData]);
 
-  // const [backend, setBackend] = useState<BackendTarget>("json");
-  // const [dataFolder, setDataFolder] = useState<string | null>(null);
   
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -791,10 +796,7 @@ export default function CollectorWorkspace({
   
   const hivDisabled = responses["hiv_test"] === "no";
 
-  //// get keys for schema
-  // const test = getVarsWithQuestionNo(responses)
-  // console.log("responses", responses)
-  const { meta } = useAppSettings();
+  
 
   
   const varsWithNo = getVarsWithQuestionNo(responses);
@@ -1007,11 +1009,11 @@ export default function CollectorWorkspace({
       return v !== "";
     };
 
-  const ids_in_section = qidsIn(activeTab as Section)
-  console.log('ids_in_section', ids_in_section)
+  // const ids_in_section = qidsIn(activeTab as Section)
+  // console.log('ids_in_section', ids_in_section)
 
-  const answered_sec =  qidsIn(activeTab as Section).filter(isAnswered)
-  console.log('answered_sec', answered_sec) 
+  // const answered_sec =  qidsIn(activeTab as Section).filter(isAnswered)
+  // console.log('answered_sec', answered_sec) 
 
   const totalInSection = Math.max(1, qidsIn(activeTab as Section).length);
   const answeredInSection = qidsIn(activeTab as Section).filter(isAnswered).length;
