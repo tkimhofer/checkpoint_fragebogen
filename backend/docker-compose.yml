@@ -20,7 +20,7 @@ services:
 
   api:
     build: ./api
-    container_name: app-api
+    container_name: chp-fastapi
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -34,3 +34,12 @@ services:
 
 volumes:
   pgdata:
+
+
+# docker compose --env-file .env.example up
+# docker compose --env-file .env.example down -v --remove-orphans
+
+# docker compose build --no-cache api
+
+# docker exec -it chp-postgres psql -U appuser -d appdb
+# docker compose --env-file .env.example exec db psql -U appuser -d appdb -c "\dt"

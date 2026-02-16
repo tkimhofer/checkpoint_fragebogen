@@ -1,3 +1,11 @@
+frontend/node_modules
+frontend/dist
+backend/services/api/venv
+**/.env
+__pycache__/
+*.pyc
+
+
 # Logs
 logs
 *.log
@@ -22,3 +30,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/backend/api/venv/
