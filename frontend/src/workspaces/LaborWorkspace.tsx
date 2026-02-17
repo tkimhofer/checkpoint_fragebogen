@@ -4,93 +4,17 @@ import { BrandTheme, BrandPage, BrandHeader } from "@/components/ui/brandTheme";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import {isPlainObject, KeyValueDenseList} from "@/components/ui/fragebogen_text_liste";
 
 import { fetchEntries, type EntryListItem } from "@/lib/api/entries";
-// import { displayValue } from "@/components/domain/fragebogen/i18n";
 
-
-// import { buildQuestionGroups } from "@/components/domain/fragebogen/derive";
-// import { displayValue, tVar } from "@/components/domain/fragebogen/i18n";
-
-
-import { displayValue } from "@/components/domain/fragebogen/i18n";
-import { buildQuestionGroups } from "@/components/domain/fragebogen/legacy"; // or derive.ts if you move it there
-// import type { Lang } from "@/components/domain/fragebogen/types";
-import type { Lang } from "@/i18n/translations";
-import type { BackendTarget } from "@/components/ui/exportSelector";
-// import { AppBurger_lab } from "@/components/ui/app_burger";
 import { useAppSettings } from "@/AppSettings";
-import { AppBurger } from "@/components/ui/app_burger";
 import { AppSettingsSheet } from "@/components/ui/appSettingsSheet";
 
+import { appDataDir } from "@tauri-apps/api/path";
 
 
-const lang: Lang = "de";
 
 type StiYears = Record<string, string>;
-
-const STI_LABELS_DE: Record<string, string> = {
-  syphilis: "Syphilis",
-  mkpox: "Affenpocken",
-  chlamydia: "Chlamydien",
-  gonorrhea: 'Gonorrhoe ("Tripper")',
-  hepa: "Hepatitis A",
-  hepb: "Hepatitis B",
-  hepc: "Hepatitis C",
-  other: "Andere",
-};
-
-// stable order for display
-const STI_ORDER = [
-  "syphilis",
-  "mkpox",
-  "chlamydia",
-  "gonorrhea",
-  "hepa",
-  "hepb",
-  "hepc",
-  "other",
-] as const;
-
-function getStiHistoryList(data: any) {
-  const years: StiYears = (data?.sti_history_years ?? {}) as StiYears;
-  const otherText: string = (data?.sti_history_which_other ?? "").trim();
-
-  // nothing to show
-  if (!years || Object.keys(years).length === 0) return [];
-
-  const entries = Object.entries(years).map(([code, year]) => {
-    const cleanYear = String(year ?? "").trim();
-    const label =
-      code === "other" && otherText
-        ? otherText // ✅ replace "other" label with the free text
-        : (STI_LABELS_DE[code] ?? code);
-
-    return { code, label, year: cleanYear };
-  });
-
-  // stable ordering (unknown codes go last, alphabetical among themselves)
-  const orderIndex = new Map<string, number>(STI_ORDER.map((c, i) => [c, i]));
-  entries.sort((a, b) => {
-    const ai = orderIndex.has(a.code) ? orderIndex.get(a.code)! : 999;
-    const bi = orderIndex.has(b.code) ? orderIndex.get(b.code)! : 999;
-    if (ai !== bi) return ai - bi;
-    return a.label.localeCompare(b.label, "de");
-  });
-
-  // remove empty-year rows if you prefer (optional)
-  // return entries.filter(e => e.year.length > 0);
-
-  return entries;
-}
-
-function hasHistoricalSyphilis(data: any) {
-  const years: StiYears = (data?.sti_history_years ?? {}) as StiYears;
-  const which: string[] = Array.isArray(data?.sti_history_which) ? data.sti_history_which : [];
-
-  return Boolean(years?.syphilis) || which.includes("syphilis");
-}
 
 function getSyphilisHistoryInfo(data: any) {
   const years: StiYears = (data?.sti_history_years ?? {}) as StiYears;
@@ -164,17 +88,29 @@ export default function LabWorkspace({
  
 }) {
 
-  const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
+  React.useEffect(() => {
+  (async () => {
+    const dir = await appDataDir();
+    console.log("App data dir:", dir);
+  })();
+}, []);
+
+  // const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
+  const { backend, dataFolder, apiBase, apiToken} = useAppSettings();
   const [items, setItems] = React.useState<EntryListItem[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const apiBase = "http://localhost:8000";
+  // const apiBase = "http://localhost:8000";
+  
+
+  const base_url = apiBase.endsWith("/") ? apiBase : apiBase + "/";
+  
 
   const handleLoadEntries = async () => {
     setLoading(true);
     try {
       // --- DB backend (unchanged) ---
       if (backend === "datenbank") {
-        const list = await fetchEntries(apiBase);
+        const list = await fetchEntries(base_url, apiToken);
         setItems(list);
         return;
       }

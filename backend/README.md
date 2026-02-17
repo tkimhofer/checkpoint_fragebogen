@@ -1,147 +1,56 @@
-# Backend – Lokaler API- & Datenbankdienst
+# Checkpoint Backend -- Quickstart
 
-Dieses Backend stellt einen **lokalen API-Dienst (FastAPI)** sowie eine **PostgreSQL-Datenbank** bereit.  
-Es wird auf einem **lokalen Windows-Rechner** betrieben und dient als Server während aktiver Datenerhebungs-Zeiträume.  
-Die Desktop-App (Tauri) sendet ihre Daten per HTTP an diesen Dienst.
+FastAPI + PostgreSQL via Docker Compose.\
+API: http://localhost:8000\
+Endpunkte: /health, /entries, /submissions\
+Alle Endpunkte benötigen:
 
----
+    X-API-Token: <token>
 
-## Komponenten
+------------------------------------------------------------------------
 
-- **PostgreSQL**  
-  Persistente Speicherung der erfassten Daten (Docker Volume)
-- **FastAPI**  
-  REST-API zur Entgegennahme und Validierung der Daten
-- **Docker Compose**  
-  Startet und verbindet alle Dienste lokal
+## Setup
 
----
+1.  `.env` im selben Ordner wie `docker-compose.yml` anlegen:
 
-## Voraussetzungen
+        cp .env.example .env
 
-- **Windows 10/11**
-- **Docker Desktop** (inkl. Docker Compose)
-- Freier Port **8000** (API)  
-- Freier Port **5432** (PostgreSQL, nur lokal relevant)
+2.  `.env` konfigurieren (Token setzen):
 
----
+        POSTGRES_USER=appuser
+        POSTGRES_PASSWORD=securepassword
+        POSTGRES_DB=appdb
+        DATABASE_URL=postgresql+psycopg://appuser:securepassword@db:5432/appdb
+        API_TOKEN=your-secure-token
 
-## Verzeichnisstruktur
+3.  Start:
 
-```
-backend/
-├─ docker-compose.yml
-├─ .env.example
-├─ README.md
-├─ db/
-│  └─ init/
-│     └─ 001_schema.sql
-└─ services/
-   └─ api/
-      ├─ Dockerfile
-      ├─ requirements.txt
-      └─ app/
-         └─ main.py
-```
+        docker compose up -d
 
----
+Test:
 
-## Einrichtung
+       curl -H "X-API-Token: your-token" http://localhost:8000/health
 
-### 1. Backend-Dateien bereitstellen
-- Das Verzeichnis `backend/` auf den Server-PC kopieren  
-  (z. B. aus einem ZIP-Archiv der GitHub-Releases)
+Stop:
 
-### 2. Konfigurationsdatei erstellen
-```bash
-cd backend
-copy .env.example .env
-```
+       docker compose down
 
-Die Datei `.env` nach Bedarf anpassen (Passwörter ändern!).
+Reset (inkl. Daten):
 
----
+       docker compose down -v
 
-## Starten des Backends
+------------------------------------------------------------------------
 
-```bash
-docker compose up -d
-```
+## Frontend ohne lokales Backend testen
 
-Beim ersten Start:
-- PostgreSQL wird initialisiert
-- Datenbankschema wird automatisch angelegt
-- Ein persistentes Docker-Volume wird erstellt
+Test-Server:
 
----
+    https://checkpoint.tkimhofer.dev
 
-## Status prüfen
+Im Frontend setzen:
 
-### API-Healthcheck
-Im Browser oder per curl:
+-   API Base URL → https://checkpoint.tkimhofer.dev
+-   gültiges Token eintragen -> Token auf Anfrage:  torben@tkimhofer.dev
 
-```
-http://localhost:8000/health
-```
 
-Antwort:
-```json
-{ "ok": true }
-```
-
----
-
-## Datenpersistenz
-
-Alle Daten werden in einem **Docker Volume** gespeichert.  
-
-- ✅ Container-Neustarts → Daten bleiben erhalten
-- ✅ Docker-Updates → Daten bleiben erhalten
-- ❌ Löschen des Volumes → Daten gehen verloren
-
-⚠️ **Volumes nur löschen, wenn ein vollständiger Reset gewünscht ist.**
-
----
-
-## Sicherheitshinweise
-
-- Die API ist für **lokale Nutzung** vorgesehen.
-- Zugriff erfolgt über ein **API-Token** (`X-API-Token` Header).
-- PostgreSQL sollte **nicht** direkt aus dem Netzwerk erreichbar sein.
-
----
-
-## Stoppen des Backends
-
-```bash
-docker compose down
-```
-
-(Daten bleiben erhalten.)
-
----
-
-## Vollständiger Reset (inkl. Daten)
-
-⚠️ **Achtung: löscht alle gespeicherten Daten!**
-
-```bash
-docker compose down -v
-```
-
----
-
-## Typischer Ablauf (Kurzfassung)
-
-1. Backend starten (`docker compose up -d`)
-2. Desktop-App starten
-3. Datenerhebung durchführen
-4. Backend ggf. weiterlaufen lassen oder stoppen
-
----
-
-## Hinweise für Entwickler
-
-- Schema-Änderungen erfolgen über SQL-Migrationen
-- Init-Skripte (`db/init`) laufen **nur beim ersten Start**
-- API & Datenbank sind bewusst lokal gehalten
+### Projekt ist noch in Entwicklung - Feedback willkommen

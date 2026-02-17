@@ -1,5 +1,7 @@
 import { readDir, readTextFile } from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
+import { fetch } from "@tauri-apps/plugin-http";
+
 
 export type EntryListItem = {
   id: string;
@@ -8,9 +10,20 @@ export type EntryListItem = {
   label?: string;
 };
 
-export async function fetchEntries(apiBase: string): Promise<EntryListItem[]> {
-  const res = await fetch(`${apiBase}/entries?limit=50`);
+export async function fetchEntries(apiBase: string, apiToken: string): Promise<EntryListItem[]> {
 
+  const url = new URL("entries?limit=50", apiBase).toString();
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  const token = apiToken.trim();
+  if (token) headers["X-API-Token"] = token;
+
+
+  const res = await fetch(url, { method: "GET", headers });
+  
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }

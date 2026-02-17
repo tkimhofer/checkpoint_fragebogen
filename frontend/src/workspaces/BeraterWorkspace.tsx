@@ -86,6 +86,7 @@ export default function CollectorWorkspace({
   readOnly = false,
   openedEntryMeta,
   onCloseReadOnly,
+  resetToken
 }: {
   // backend: BackendTarget;
   // setBackend: (b: BackendTarget) => void;
@@ -97,6 +98,7 @@ export default function CollectorWorkspace({
   readOnly?: boolean;
   openedEntryMeta?: { entryId?: string; createdAt?: string } | null;
   onCloseReadOnly?: () => void;
+  resetToken?: number
 }) {
 
 
@@ -107,7 +109,7 @@ export default function CollectorWorkspace({
   const { meta } = useAppSettings();
 
   // console.log('openedEntryMeta', openedEntryMeta)
-  const { backend, dataFolder, lang, setLang} = useAppSettings();
+  const { backend, dataFolder, lang, apiBase, apiToken} = useAppSettings();
   const { toast, responses, setResponses, backup, setBackup } =
     useQuestionnaireState(LOCAL_STORE_VAR);
 
@@ -127,6 +129,29 @@ export default function CollectorWorkspace({
 
     onRehydrated?.(); // clear trigger
   }, [rehydrateData]);
+
+  const resetForm = React.useCallback(() => {
+    setResponses(prev => {
+      const next = {
+        beraterkennung: prev?.beraterkennung ?? "",
+        birth_country: "DE",
+        risk_country: "DE",
+      };
+
+      localStorage.setItem(LOCAL_STORE_VAR, JSON.stringify(next));
+      return next;
+    });
+
+    setBackup({});
+    setActiveTab("general");
+  }, []);
+
+  
+  React.useEffect(() => {
+  if (resetToken !== undefined) {
+    resetForm();
+  }
+}, [resetToken]);
 
   
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -897,7 +922,7 @@ export default function CollectorWorkspace({
         let r: SubmitResult;
 
         if (backend === 'datenbank') {
-          r = await submitPayload("http://127.0.0.1:8000/submissions", payload)
+          r = await submitPayload(new URL("/submissions", apiBase.endsWith("/") ? apiBase : apiBase + "/").toString(), payload, apiToken)
         } else{
         //json
           console.log('json backend selected, submitting to file')

@@ -12,6 +12,22 @@
     "fs:default",
     "fs:allow-read",
     "fs:allow-write",
-    "fs:allow-mkdir"
+    "fs:allow-mkdir",
+
+    "store:default",
+    "store:allow-load",
+    "store:allow-save",
+    "store:allow-set",
+    "store:allow-get",
+    {
+      "identifier": "http:default",
+      "allow": [
+         { "url": "http://127.0.0.1:8000/*" },
+        { "url": "http://localhost:8000/*" },
+        { "url": "http://192.168.*.*:9000/*" },
+
+        { "url": "https://checkpoint.tkimhofer.dev/*" }
+      ]
+    }
   ]
 }

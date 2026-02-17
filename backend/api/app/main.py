@@ -1,30 +1,46 @@
-import os
+import os, hmac
 
-from uuid import UUID
 from typing import Optional
-from datetime import datetime
-
-from dotenv import load_dotenv
-load_dotenv("/Users/tk/js/chp_ahd/backend/.env.example")
+# from dotenv import load_dotenv
 
 from fastapi import FastAPI, Depends, Query, Header, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from datetime import datetime, time
-from zoneinfo import ZoneInfo
 from sqlalchemy import select, desc
 from typing import Iterable, Dict, List, Tuple
 
-
-from .db import get_db, engine
+from .db import get_db
 from .models import Base, BronzeFragebogen, SilverFragebogen
 from .schemas import SubmissionIn, SubmissionOut, SilverIn
 
-API_TOKEN = os.environ.get("API_TOKEN", "")
-CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
-print("CORS_ORIGINS =", CORS_ORIGINS)
 
+# load_dotenv(".env")
+API_TOKEN = os.environ.get("API_TOKEN", "")
+
+# CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
+# print("CORS_ORIGINS =", CORS_ORIGINS)
+
+# CORS_ORIGINS = ["*"]
+# print("CORS_ORIGINS =", CORS_ORIGINS)
+
+TESTANFORDERUNGEN: dict[str, str] = {
+  "counsel": "Nur Beratung",
+
+  "hiv_lab": "HIV Suchtest (Labor)",
+  "hiv_poc": "HIV Suchtest (Schnelltest/POC)",
+
+  "tp": "Syphilis Serologie",
+
+  "go_ct_throat": "Rachen",
+  "go_ct_urine": "Urin",
+  "go_ct_vag": "Vaginal",
+  "go_ct_anal": "Rektal",
+
+  "hav": "HAV",
+  "anti-hbc": "HBV (core)",
+  "hcv": "HCV",
+}
 
 GO_CT_SITE_ORDER = [
     "go_ct_throat",
@@ -75,37 +91,33 @@ def merged_test_labels(selected_codes: Iterable[str], labels: Dict[str, str]) ->
 
 app = FastAPI(title="CHP Fragebogendaten API")
 
-if CORS_ORIGINS:
-  app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=False, # no browser creds / cookies etc
-    allow_methods=["*"],
-    allow_headers=["Content-Type", "Accept", "X-API-Token"],
-  )
+# if CORS_ORIGINS:
+#   app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=CORS_ORIGINS,
+#     allow_credentials=False, # no browser creds / cookies etc
+#     allow_methods=["*"],
+#     allow_headers=["Content-Type", "Accept", "X-API-Token"],
+#   )
 
 def require_token(x_api_token: Optional[str] = Header(default=None)):
-  if API_TOKEN and x_api_token != API_TOKEN:
+  if not API_TOKEN:
+    raise HTTPException(status_code=500, detail="API_TOKEN not set")
+  if not x_api_token or not hmac.compare_digest(x_api_token, API_TOKEN):
     raise HTTPException(status_code=401, detail="Invalid API token")
 
-@app.get("/health")
+@app.get("/health", dependencies=[Depends(require_token)])
 def health(db: Session = Depends(get_db)):
   db.execute(text("SELECT 1"))
   return {"ok": True}
 
-
-@app.get("/entries")
+@app.get("/entries", dependencies=[Depends(require_token)])
 def entries(
         db: Session = Depends(get_db),
         limit: int = Query(50, ge=1, le=500),
         # source = Query(None),
         tz: str = Query("Europe/Berlin"),
 ):
-  ### fetch all entries from today
-  # zone = ZoneInfo(tz)
-  # now = datetime.now(zone)
-  # start = datetime.combine(now.date(), time.min, tzinfo=zone)
-  # end = datetime.combine(now.date(), time.max, tzinfo=zone)
 
   stmt = (
     select(
@@ -123,26 +135,6 @@ def entries(
   #   stmt = stmt.where(BronzeFragebogen.system_source == source)
 
   rows = db.execute(stmt).all()
-
-  TESTANFORDERUNGEN: dict[str, str] = {
-    "counsel": "Nur Beratung",
-
-    "hiv_lab": "HIV Suchtest (Labor)",
-    "hiv_poc": "HIV Suchtest (Schnelltest/POC)",
-
-    "tp": "Syphilis Serologie",
-
-    "go_ct_throat": "Rachen",
-    "go_ct_urine": "Urin",
-    "go_ct_vag": "Vaginal",
-    "go_ct_anal": "Rektal",
-
-    "hav": "HAV",
-    "anti-hbc": "HBV (core)",
-    "hcv": "HCV",
-  }
-
-
 
   ts =  lambda r: f'{r.system_created_at.strftime("%d.%m.%Y um %H:%M Uhr")}'
   testanf = lambda r: ", ".join(merged_test_labels(r.payload.get("data", {}).get("testanforderungen"), TESTANFORDERUNGEN))
@@ -165,20 +157,6 @@ def entries(
 
   return {"ok": True, "items": items}
 
-# @app.get("/entries/{entry_id}")
-# def get_entry(entry_id: UUID, db: Session = Depends(get_db)):
-#   stmt = select(BronzeFragebogen).where(BronzeFragebogen.id == entry_id)
-#   row = db.execute(stmt).scalar_one_or_none()
-#   if not row:
-#     raise HTTPException(status_code=404, detail="Entry not found")
-#
-#   return {
-#     "ok": True,
-#     "id": str(row.id),
-#     "created_at": row.system_created_at.isoformat(),
-#     "source": row.system_source,
-#     "payload": row.payload,
-#   }
 
 @app.post("/submissions", response_model=SubmissionOut, dependencies=[Depends(require_token)])
 def create_submission(body: SubmissionIn, db: Session = Depends(get_db)):

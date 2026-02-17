@@ -14,8 +14,11 @@ import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/co
 
 import { open as openExternal } from "@tauri-apps/plugin-shell";
 import { Mail } from "lucide-react";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+
 
 import type { Lang } from "@/i18n/translations";
+import { getSetting } from "@/lib/settingsStore";
 
 const COUNTRY_FOR_LANG: Record<Lang, string> = {
   de: "DE",
@@ -46,6 +49,8 @@ export function AppSettingsSheet({
     setBackend,
     dataFolder,
     setDataFolder,
+    apiBase, setApiBase,
+    apiToken, setApiToken,
   } = useAppSettings();
 
   const langs: Lang[] = ["de", "en", "tr", "uk"];
@@ -62,6 +67,10 @@ export function AppSettingsSheet({
     await openExternal(`mailto:${meta.contactEmail}`);
   };
 
+  const [healthState, setHealthState] = React.useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
 
 
   return (
@@ -73,115 +82,206 @@ export function AppSettingsSheet({
       </SheetTrigger>
 
       <SheetContent side="right" className="w-[320px] sm:w-[380px]">
-        <div className="flex h-full flex-col">
-          <SheetHeader>
-            <SheetTitle>Einstellungen</SheetTitle>
-          </SheetHeader>
+  <div className="flex h-full flex-col">
+    <SheetHeader>
+      <SheetTitle>Einstellungen</SheetTitle>
+    </SheetHeader>
 
-          {/* MAIN (scrollable) */}
-          <div className="mt-4 flex-1 space-y-5 overflow-auto pr-1">
-            {/* Sprache (collector only) */}
-            {showLang && (
-              <section className="space-y-2">
-                <h4 className="text-sm font-semibold text-foreground">Sprache</h4>
+    {/* CONTENT */}
+    <div className="mt-4 flex-1 overflow-auto pr-1">
+      <div className="flex min-h-full flex-col gap-5">
+        {/* TOP AREA */}
+        <div className="space-y-5">
+          {/* Sprache (collector only) */}
+          {showLang && (
+            <section className="space-y-2">
+              <h4 className="text-sm font-semibold text-foreground">Sprache</h4>
 
-                <RadioGroup
-                  value={lang}
-                  onValueChange={(v) => setLang(v as Lang)}
-                  className="grid grid-cols-2 gap-2"
-                >
-                  {langs.map((l) => (
-                    <Label
-                      key={l}
-                      htmlFor={`lang-${l}`}
-                      className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50"
-                    >
-                      <RadioGroupItem id={`lang-${l}`} value={l} />
-                      <span className="text-sm">{LANG_NAMES[l]}</span>
-
-                      <span className="ml-auto">
-                        <ReactCountryFlag
-                          countryCode={COUNTRY_FOR_LANG[l]}
-                          style={{ width: "1.25rem", height: "1rem", borderRadius: "2px" }}
-                          title={LANG_NAMES[l]}
-                          aria-label={`${LANG_NAMES[l]} flag`}
-                        />
-                      </span>
-                    </Label>
-                  ))}
-                </RadioGroup>
-              </section>
-            )}
-
-            {/* Backend + Folder */}
-            <section className="rounded-lg border p-4 space-y-3">
-              <div className="text-sm font-semibold">Backend</div>
-
-              <BackendSwitch value={backend} onChange={setBackend} />
-
-              {backend === "json" && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSelectFolder}
-                    aria-label="Speicherort auswählen"
-                    title="Speicherort auswählen"
+              <RadioGroup
+                value={lang}
+                onValueChange={(v) => setLang(v as Lang)}
+                className="grid grid-cols-2 gap-2"
+              >
+                {langs.map((l) => (
+                  <Label
+                    key={l}
+                    htmlFor={`lang-${l}`}
+                    className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50"
                   >
-                    <Folder className="h-4 w-4" />
-                  </Button>
-                  <span className="text-xs text-muted-foreground break-all">
-                    {dataFolder?.trim() || "Speicherort auswählen"}
-                  </span>
-                </div>
-              )}
+                    <RadioGroupItem id={`lang-${l}`} value={l} />
+                    <span className="text-sm">{LANG_NAMES[l]}</span>
+
+                    <span className="ml-auto">
+                      <ReactCountryFlag
+                        countryCode={COUNTRY_FOR_LANG[l]}
+                        style={{ width: "1.25rem", height: "1rem", borderRadius: "2px" }}
+                        title={LANG_NAMES[l]}
+                        aria-label={`${LANG_NAMES[l]} flag`}
+                      />
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
             </section>
+          )}
 
-            {/* Collector-only actions */}
-            {mode === "collector" && onClearDraft && (
-              <section className="rounded-lg border p-4 space-y-3">
-                <div className="text-sm font-semibold">Fragebogen</div>
-                <Button variant="outline" className="w-full" onClick={onClearDraft}>
-                  Entwurf leeren
-                </Button>
-              </section>
-            )}
-          </div>
+          {/* Collector-only actions (place near top) */}
+          {mode === "collector" && onClearDraft && (
+            <section className="rounded-lg border p-4 space-y-3">
+              <div className="text-sm font-semibold">Fragebogen zurücksetzen</div>
+              <Button variant="outline" className="w-full" onClick={onClearDraft}>
+                Alle Antworten leeren
+              </Button>
+            </section>
+          )}
+        </div>
 
-          {/* FOOTER (pinned) */}
-          {/* <div className="pt-4">
-            <Separator className="my-3" />
-            <div className="text-xs text-muted-foreground">
-              App-Version: <span className="font-medium text-foreground">{meta.version}</span>
+        {/* SPACER pushes backend to bottom (above footer) */}
+        <div className="flex-1" />
+
+        {/* BOTTOM AREA: Backend section */}
+        <section className="rounded-lg border p-4 space-y-3">
+          <div className="text-sm font-semibold">Backend Auswahl</div>
+
+          <BackendSwitch value={backend} onChange={setBackend} />
+
+          {backend === "json" && (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">Lokales Datenverzeichnis</div>
+
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4 text-muted-foreground" />
+
+                <button
+                  onClick={handleSelectFolder}
+                  className="text-xs text-primary hover:underline break-all"
+                >
+                  {dataFolder?.trim() || "Speicherort auswählen"}
+                </button>
+
+                {dataFolder && (
+                  <button
+                    onClick={handleSelectFolder}
+                    className="text-[11px] text-muted-foreground hover:text-foreground"
+                  >
+                    Ändern
+                  </button>
+                )}
+              </div>
             </div>
-          </div> */}
-          <div className="pt-4">
-  <Separator className="my-3" />
+          )}
 
-  <div className="space-y-2 text-xs text-muted-foreground">
-    <div>
-      App-Version:{" "}
-      <span className="font-medium text-foreground">
-        {meta.version}
-      </span>
+          {backend === "datenbank" && (
+          < div className="space-y-2">
+            <div className="text-xs text-muted-foreground">API Basis-URL</div>
+
+            <div className="flex items-center gap-2">
+              <input
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={apiBase}
+                onChange={(e) => setApiBase(e.target.value)}
+                placeholder="http://127.0.0.1:8000"
+                spellCheck={false}
+                inputMode="url"
+              />
+
+              <Button
+                type="button"
+                className={`
+                  ${healthState === "success" ? "bg-green-600 text-white" : ""}
+                  ${healthState === "error" ? "bg-red-600 text-white" : ""}
+                `}
+                size="sm"
+                disabled={healthState === "loading"}
+                onClick={async () => {
+                  try {
+                    setHealthState("loading");
+
+                    const base = apiBase.trim();
+                    const url = new URL("/health", base.endsWith("/") ? base : base + "/").toString();
+
+                    const res = await tauriFetch(url, {
+                      method: "GET",
+                      headers: {
+                        Accept: "application/json",
+                        "X-API-Token": apiToken.trim(),
+                      },
+                    });
+
+                    console.log("health status", res.status);
+
+                    if (res.ok) {
+                      setHealthState("success");
+                      setTimeout(() => setHealthState("idle"), 2000);
+                    } else {
+                      setHealthState("error");
+                      setTimeout(() => setHealthState("idle"), 2500);
+                    }
+                    // setApiToken(apiToken.trim());
+                    // console.log("after setApiToken, store reads:", await getSetting("apiToken"));
+                    
+                  } catch (e) {
+                    console.error("health fetch failed", e);
+                    setHealthState("error");
+                    setTimeout(() => setHealthState("idle"), 2500);
+                  }
+                }}
+              >
+                {healthState === "loading" && "…"}
+                {healthState === "idle" && "Test"}
+                {healthState === "success" && "✓"}
+                {healthState === "error" && "✕"}
+              </Button>
+            </div>
+
+            <div className="text-xs text-muted-foreground">API Token</div>
+            <input
+              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+              value={apiToken}
+              onChange={(e) => setApiToken(e.target.value)}
+              placeholder="Token eingeben..."
+              spellCheck={false}
+              autoCapitalize="none"
+              autoCorrect="off"
+              inputMode="text"
+              type="password"
+            />
+            <div className="text-xs text-muted-foreground">
+              {apiToken?.trim()
+                ? "Token gespeichert ✅"
+                : "Kein Token gespeichert"}
+            </div>
+
+          </div>
+        )}
+        </section>
+      </div>
     </div>
 
-    {meta.contactEmail && (
-      <button
-        type="button"
-        onClick={handleOpenMail}
-        className="inline-flex items-center gap-2 hover:text-foreground"
-      >
-        <Mail className="h-3.5 w-3.5" />
-        <span className="font-medium">
-          {meta.contactEmail}
-        </span>
-      </button>
-    )}
-  </div>
-</div>
+    {/* FOOTER */}
+    <div className="pt-4">
+      <Separator className="my-3" />
+
+      <div className="space-y-2 text-xs text-muted-foreground">
+        <div>
+          App-Version: <span className="font-medium text-foreground">{meta.version}</span>
         </div>
-      </SheetContent>
+
+        {meta.contactEmail && (
+          <button
+            type="button"
+            onClick={handleOpenMail}
+            className="inline-flex items-center gap-2 hover:text-foreground"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            <span className="font-medium">{meta.contactEmail}</span>
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+</SheetContent>
+
     </Sheet>
   );
 }

@@ -1,5 +1,5 @@
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { appDataDir, join } from "@tauri-apps/api/path";
+import { fetch } from "@tauri-apps/plugin-http";
 
 export type SubmissionPayload = {
   meta: {
@@ -16,20 +16,24 @@ export type SubmitResult =
 export async function submitPayload(
   endpoint: string,
   payload: unknown,
+  apiToken: string,
   timeoutMs = 15_000
 ): Promise<SubmitResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  const API_TOKEN = 'token-change-me';
+  const API_TOKEN = apiToken.trim();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+  };
+  if (API_TOKEN) headers["X-API-Token"] = API_TOKEN;
+
 
   try {
     const res = await fetch(endpoint, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-API-Token": API_TOKEN,
-      },
+      headers,
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
