@@ -6,33 +6,19 @@ Desktop-Anwendung zur anonymen STI-Testaufnahme\
 Dieses Repo enthält das **Frontend der Tauri Desktop-App**, mit
 dem die nativen Builds erzeugt werden.
 
-Fertige Installationsdateien zum Download befinden sich unter **Releases** (siehe rechte
-Seitenleiste):
-
--   Windows (.exe)
--   macOS (.dmg)
-
 ------------------------------------------------------------------------
 
 ## Schnellstart
 
-1.  .exe oder .dmg herunterladen und installieren
-2.  Backend in App konfigurieren:
+1.  .exe oder .dmg herunterladen (s. **Releases**) & installieren
+2.  Backend in App konfigurieren (Burger Menü re oben):
 
 Zum Testen kann derzeit der folgende Server verwendet werden:
 
-    https://checkpoint.tkimhofer.dev
-
-Im Frontend backend details konfigurieren (Burger Menü re oben):
-
 -   API Base URL → https://checkpoint.tkimhofer.dev
--   gültiges API-Token eintragen
+-   API-Token eintragen (frag mich nach Token: torben@tkimhofer.dev)
 
-Test-Token auf Anfrage:
-
-    torben@tkimhofer.dev
-
-Die App überträgt Fragebogendaten an ein Docker-basiertes Backend
+Die App interagiert dann mit einem Docker-basiertes Backend
 (FastAPI + PostgreSQL, siehe `backend/`).
 
 ------------------------------------------------------------------------
