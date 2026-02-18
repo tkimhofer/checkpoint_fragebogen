@@ -16,7 +16,7 @@ dem die nativen Builds erzeugt werden.
 Zum Testen kann derzeit der folgende Server verwendet werden:
 
 -   API Base URL → https://checkpoint.tkimhofer.dev
--   API-Token eintragen (frag mich nach Token: torben@tkimhofer.dev)
+-   API-Token  → frag mich nach Token: torben@tkimhofer.dev
 
 Die App interagiert dann mit einem Docker-basiertes Backend
 (FastAPI + PostgreSQL, siehe `backend/`).
