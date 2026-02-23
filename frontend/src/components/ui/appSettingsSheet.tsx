@@ -204,8 +204,10 @@ export function AppSettingsSheet({
                       method: "GET",
                       headers: {
                         Accept: "application/json",
-                        "X-API-Token": apiToken.trim(),
-                      },
+                       ...(apiToken
+                        ? { Authorization: `Bearer ${apiToken.trim()}` }
+                        : {}),
+                    }
                     });
 
                     console.log("health status", res.status);

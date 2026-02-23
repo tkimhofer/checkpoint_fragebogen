@@ -7,7 +7,7 @@ SYSTEM_BE_VERSION = "0.9"
 
 class PayloadMeta(BaseModel):
     system_created_at: datetime
-    system_source: str = "tauri_fe"
+    system_source: str = Field(..., examples=["tablet x", "mobile y", "dektop z"])
     feVersion: str
     schemaVersion: str
     # lang: str

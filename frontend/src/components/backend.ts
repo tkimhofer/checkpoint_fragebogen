@@ -27,7 +27,10 @@ export async function submitPayload(
     "Content-Type": "application/json",
     "Accept": "application/json",
   };
-  if (API_TOKEN) headers["X-API-Token"] = API_TOKEN;
+  if (API_TOKEN) {
+    // const t = API_TOKEN.trim();
+    headers["Authorization"] = `Bearer ${API_TOKEN}`;
+  }
 
 
   try {

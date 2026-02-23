@@ -46,7 +46,7 @@ import {submitPayload, submitPayloadJSONToFile, type SubmitResult} from "@/compo
 import { buildPayloadData } from "@/components/domain/fragebogen/derive";
 import { rehydrateResponsesFromPayloadData } from "@/components/domain/fragebogen/derive";
 
-const CURR_VERSION = "0.80";
+const CURR_VERSION = "0.81";
 const SCHEMA_VERSION = "1"; // bump if question set changes
 // const SUBMIT_LABELS = false; // true -> submit localized labels instead of codes
 const LOCAL_STORE_VAR = `chp_draft_${CURR_VERSION}`

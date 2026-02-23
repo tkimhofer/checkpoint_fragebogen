@@ -19,11 +19,12 @@ export async function fetchEntries(apiBase: string, apiToken: string): Promise<E
   };
 
   const token = apiToken.trim();
-  if (token) headers["X-API-Token"] = token;
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  console.log("fetching entries with headers:", headers);
 
 
   const res = await fetch(url, { method: "GET", headers });
-  
+
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
