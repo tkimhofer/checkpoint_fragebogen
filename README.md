@@ -5,7 +5,7 @@ Desktop-Anwendung zur anonymen STI-Testaufnahme\
 
 Multilinguale, datensparsame Erfassung für den Einsatz vor Ort.\
 Native Builds für **Windows (.exe)** und **macOS (.dmg)** stehen unter
-**Releases** bereit.
+**Releases** bereit (s. rechter Bildrand).
 
 ------------------------------------------------------------------------
 
