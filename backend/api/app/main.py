@@ -22,6 +22,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pythonjsonlogger import json
 
+# from starlette.middleware.base import BaseHTTPMiddleware
+
 root = logging.getLogger()
 root.setLevel(logging.INFO)
 
@@ -162,7 +164,6 @@ Backend-Service zur Verarbeitung und Bereitstellung von CHP-Fragebogendaten.
 bearer = HTTPBearer(auto_error=False)
 x_token = APIKeyHeader(name="x-api-token", auto_error=False)
 
-
 def info_request(request: Request) -> Dict[str, Optional[str]]:
   h = request.headers
 
@@ -208,6 +209,30 @@ def require_token(
 
   auth_logger.info("auth_success", extra={"meta": meta})
   return True
+
+@app.middleware("http")
+async def log_404s(request: Request, call_next):
+    response = await call_next(request)
+
+    if response.status_code == 404:
+
+        h = dict(request.headers)
+        extra = {
+          "method": request.method,
+          "path": request.url.path,
+        }
+        meta = info_request(request) | h.pop("authorization", {}) | h.pop("x-api-token", {}) | extra
+        # h = dict(request.headers)
+        # h.pop("authorization", None)
+        # h.pop("cookie", None)
+
+        auth_logger.warning(
+            "404",
+            extra={"meta":meta},
+        )
+    return response
+
+
 
 #
 # def require_token(request: Request, x_api_token: Optional[str] = Header(default=None)):
