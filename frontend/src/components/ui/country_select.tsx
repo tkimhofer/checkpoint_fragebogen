@@ -65,7 +65,6 @@ export function CountryCombobox({
                   key="__clear__"
                   value="__clear__"
                   onSelect={() => {
-                  console.log("[CountryCombobox] clear selected", { valueBefore: value, next: null });
                     onChange?.(null)
                     setOpen(false)
                   }}
@@ -82,12 +81,6 @@ export function CountryCombobox({
                       value={`${label} ${c.code}`} // searchable by name + code
                       onSelect={() => {
                         const next = c.code === value ? null : c.code
-console.log("[CountryCombobox] country selected", {
-    clicked: c.code,
-    valueBefore: value,
-    next,
-  });
-
                         onChange?.(next)
                         setOpen(false)
                       }}

@@ -36,7 +36,7 @@ export function TwoInputRow({
           value={rightValue}
           placeholder={"PLZ (zB. 470xx)"}
           maxLength={3}
-          onChange={(e) => onRightChange(e.target.value)}
+          onChange={(e) => onRightChange(e.target.value.replace(/\D/g, "").slice(0, 3))}
         />
       </div>
     </div>

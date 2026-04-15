@@ -43,13 +43,13 @@ Reset (inkl. Daten):
 
 ## Frontend ohne lokales Backend testen
 
-Test-Server:
+Test-Server für Beratung und Test (BuT):
 
-    https://checkpoint.tkimhofer.dev
+    https://but_adh.tkimhofer.dev
 
 Im Frontend setzen:
 
--   API Base URL → https://checkpoint.tkimhofer.dev
+-   API Base URL → https://but_ad.tkimhofer.dev
 -   gültiges Token eintragen -> Token auf Anfrage:  torben@tkimhofer.dev
 
 

@@ -1,17 +1,30 @@
-import React from "react"
+import React, { useState } from "react"
 
 import { BrandTheme, BrandPage, BrandHeader } from "@/components/ui/brandTheme";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { StatsModal } from "@/components/ui/statsModal";
+import { IconPlus, IconCheck } from "@tabler/icons-react";
 
-import { fetchEntries, type EntryListItem } from "@/lib/api/entries";
+// import { fetchEntries, type EntryListItem } from "@/lib/api/entries";
+
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { useAppSettings } from "@/AppSettings";
 import { AppSettingsSheet } from "@/components/ui/appSettingsSheet";
 
 import { appDataDir } from "@tauri-apps/api/path";
+// import CalendarHeatmapView from "@/components/ui/calenderHeatmapView";
+import IntakeDatePicker from "@/components/ui/IntakDatePicker";
 
+import { buildApiUrl } from "@/lib/api/config";
+
+// import {computeStats} from "@/components/helpers";
+import dayjs from "dayjs";
+
+import { computeStats, statsToRows } from "@/components/helpers";
 
 
 type StiYears = Record<string, string>;
@@ -34,13 +47,13 @@ function getSyphilisHistoryInfo(data: any) {
 
 
 function getGenderBadge(data: any) {
-  const g = data?.gender_assigned;
+  const g = data?.gender;
 
   if (!g) return null;
 
   if (g === "male") {
     return (
-      <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-900">
+      <span className="ml-0 inline-flex items-center rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-semibold text-blue-900">
         ♂
       </span>
     );
@@ -48,7 +61,7 @@ function getGenderBadge(data: any) {
 
   if (g === "female") {
     return (
-      <span className="ml-2 inline-flex items-center rounded-full bg-pink-100 px-2 py-0.5 text-[11px] font-semibold text-pink-900">
+      <span className="ml-2 inline-flex items-center rounded-full bg-pink-100 px-1.5 py-0.5 text-xs font-semibold text-pink-900">
         ♀
       </span>
     );
@@ -56,7 +69,7 @@ function getGenderBadge(data: any) {
 
   // optional fallback (divers/intersex/unknown)
   return (
-    <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-800">
+    <span className="ml-2 inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-800">
       ∞
     </span>
   );
@@ -82,52 +95,41 @@ function formatTimestampDE(ts?: string) {
 
 export default function LabWorkspace({
   onOpenEntry,
-
+  headerRight,
 }: {
   onOpenEntry: (payloadData: any, meta?: { entryId?: string; createdAt?: string }) => void;
- 
+  headerRight?: React.ReactNode;
 }) {
 
   React.useEffect(() => {
-  (async () => {
-    const dir = await appDataDir();
-    console.log("App data dir:", dir);
-  })();
-}, []);
+    (async () => {
+      const dir = await appDataDir();
+      console.log("App data dir:", dir);
+    })();
+  }, []);
 
   // const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
   const { backend, dataFolder, apiBase, apiToken} = useAppSettings();
   const [items, setItems] = React.useState<EntryListItem[]>([]);
   const [loading, setLoading] = React.useState(false);
-  // const apiBase = "http://localhost:8000";
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const base = apiBase.trim().replace(/\/+$/, "");
+  const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
+
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [statsRows, setStatsRows] = useState<any[]>([]);
   
 
-  const base_url = apiBase.endsWith("/") ? apiBase : apiBase + "/";
-  
+  const handleLoadJSON = async () => {
+    // setLoading(true);
 
-  const handleLoadEntries = async () => {
-    setLoading(true);
+    console.log("Loading entries with backend:", backend);
     try {
-      // --- DB backend (unchanged) ---
-      if (backend === "datenbank") {
-        const list = await fetchEntries(base_url, apiToken);
-        setItems(list);
-        return;
-      }
-
-      // --- JSON backend: read files + build DB-shaped list ---
-      if (!dataFolder) {
-        console.warn("backend=json but dataFolder is not set");
-        setItems([]);
-        return;
-      }
 
       // Lazy-load Tauri APIs only when needed
-      
       const fs = await import("@tauri-apps/plugin-fs");
       const path = await import("@tauri-apps/api/path");
 
-      // === helpers mirroring your Python logic ===
       const TESTANFORDERUNGEN: Record<string, string> = {
         counsel: "Nur Beratung",
         hiv_lab: "HIV Suchtest (Labor)",
@@ -235,72 +237,165 @@ export default function LabWorkspace({
     }
   };
 
-  const { meta } = useAppSettings();
+  // const { meta } = useAppSettings();
+  
+  const handleTodayClick = () => {
+
+    if (backend === "datenbank") {
+      const todayIso = dayjs().format("YYYY-MM-DD");
+      handleDateSelect(todayIso);
+      return;
+    }
+    else if (backend === "json" ) {
+      if (!dataFolder) {
+        console.warn("backend=json -> dataFolder not set!");
+        setItems([]);
+        return;
+      }
+
+
+      handleLoadJSON()
+      return;
+    }
+  };
+
+  const handleDateSelect = async (iso: string | null) => {
+    if (!iso) {
+      setItems([]);
+      return;
+    }
+    setSelectedDate(iso);
+    setLoading(true);
+    try {
+      const url = buildApiUrl(base, `/inbox/entries?day=${encodeURIComponent(iso)}`);
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${apiToken.trim()}`,
+        },
+      });
+      if (!res.ok) {
+        console.error("entries by date failed", res.status, res.statusText);
+        setItems([]);
+        return;
+      }
+      const payload = await res.json(); // if this fails, switch to: const list = res.data
+      setItems(payload.items);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+      setSelectedIds(prev => {
+        const next = new Set(prev);     // IMPORTANT: create a new Set
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    };
+
+    React.useEffect(() => {
+      if (!items || items.length === 0) {
+        setSelectedIds(new Set());
+        return;
+      }
+
+      const allIds = new Set(items.map(it => it.id));
+      setSelectedIds(allIds);
+
+    }, [items]);
+  
+  const handleStatsClick = () => {
+    const selectedEntries = items.filter((it) => selectedIds.has(it.id));
+    if (selectedEntries.length === 0) return;
+    const stats = computeStats(selectedEntries);
+    const dateLabel =
+      selectedDate ?? dayjs().format("YYYY-MM-DD");
+    const rows = statsToRows(dateLabel, stats, selectedEntries.length);
+    setStatsRows(rows);
+    setStatsModalOpen(true);
+  };
 
   return (
     <BrandTheme>
       <BrandPage>
-        <BrandHeader
-          logoSrc="/logo-ah-91db5ab3.png"
-          right={
+      <BrandHeader
+        logoSrc="/BuTAH-8c0843ce.jpeg"
+        right={
+          <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-3">
-              <span
-                className="inline-flex items-center rounded-full px-2.5 py-0.5
-                text-[11px] font-bold uppercase tracking-wide
-                bg-red-500/30 text-red-900
-                ring-1 ring-red-400/50
-                shadow-[0_0_10px_rgba(239,68,68,0.6)]"
-              >
-                TESTVERSION {meta.version}
-              </span>
-
+               {headerRight}
               <AppSettingsSheet mode="lab" />
             </div>
-          }
+          </div>
+        }
+      />
+       <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <div className="w-[240px] shrink-0">
+              <IntakeDatePicker
+                value1={selectedDate}
+                apiOrigin={base}
+                apiToken={apiToken}
+                onSelectDate={handleDateSelect}
+              />
+            </div>
+            <Button
+              variant="quiet"
+              onClick={handleTodayClick}
+              className="h-6 w-6 flex items-center justify-center text-xs"
+            >
+              {loading ? "…" : "H"}
+            </Button>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {items.length > 0 &&
+              `${items.length} ${items.length === 1 ? "Eintrag" : "Einträge"}`}
+          </div>
+          <div className="flex-1" />
+          <Button
+            disabled={selectedIds.size === 0}
+            onClick={handleStatsClick}
+            variant="quiet"
+            className="h-6 text-xs"
+          >
+            S ({selectedIds.size})
+          </Button>
+        </div>
+        <StatsModal
+          opened={statsModalOpen}
+          onClose={() => setStatsModalOpen(false)}
+          rows={statsRows}
         />
-
-        <div className="space-y-4">
-          <Button onClick={handleLoadEntries}>{loading ? "Lade…" : "Einträge laden"}</Button>
-
-          <div className="text-xs text-muted-foreground">{items.length ? `${items.length} Einträge` : ""}</div>
-
           {items.length === 0 ? (
-            <div className="text-sm text-muted-foreground">Noch keine Einträge geladen.</div>
+            <div className="text-sm text-muted-foreground">Keine Einträge.</div>
           ) : (
             <Accordion type="single" collapsible className="w-full">
               {items.map((it) => (
-                <AccordionItem key={it.id} value={it.id}>
+                <div  key={it.id}  className="grid grid-cols-[1fr_auto] items-center gap-2"> 
+                <AccordionItem value={it.id}>
                   <AccordionTrigger>
-                    <div className="grid w-full grid-cols-[1fr_auto_auto] items-center gap-4 pr-2">
-                      
-                      <div className="flex flex-col"> 
-                      {/* Column 1 — Besucherkennung + Gender */}
+                    <div className="grid w-full grid-cols-[auto_9rem_1fr_auto] items-center gap-4 pr-2">
                       <div className="flex items-center gap-2 text-sm font-semibold tracking-wide">
-                        <span>{it.pl?.data?.besucherkennung ?? it.label ?? it.id.slice(0, 8)}</span>
+                        <span>
+                          {it.pl?.data?.besucherkennung ?? it.label ?? it.id.slice(0, 8)}
+                        </span>
                         {getGenderBadge(it.pl.data)}
                       </div>
-
-                      {/* Column 2 — Created at */}
-                      <div className="text-[11px] text-muted-foreground/80">
+                      <div className="text-[11px] text-muted-foreground/80 whitespace-nowrap tabular-nums">
                         {formatTimestampDE(it.created_at)}
                       </div>
-                      </div>
-
-                      {/* Column 3 — Anforderungen */}
-                      <div className="ml-auto text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-md whitespace-nowrap">
+                      <div />
+                      <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                      <div className="shrink-0 text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-md whitespace-nowrap">
                         {it.n_tests} Anforderungen
                       </div>
-
                     </div>
-                  </AccordionTrigger>
-
-                  {/* <AccordionTrigger>
-                    <div className="flex w-full items-center justify-between pr-2">
-                      <span className="text-sm">{it.label ?? it.id.slice(0, 8)} {getGenderBadge(it.pl.data)}</span>
-                      <span className="ml-4 text-xs text-muted-foreground">{it.n_tests} Anforderungen</span>
                     </div>
-                  </AccordionTrigger> */}
-
+                    </AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-3">
                         <div className="rounded-md border border-primary/40 bg-primary/5 px-3 py-2">
@@ -332,27 +427,42 @@ export default function LabWorkspace({
                                 )}
                               </div>
                             </div>
-
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() =>
-                                onOpenEntry(it.pl.data, {
-                                  entryId: it.pl.data.besucherkennung,
-                                  createdAt: it.pl.meta.created_at,
-                                })
-                              }
-                              className="shrink-0"
-                            >
-                              Fragebogen öffnen
-                            </Button>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() =>
+                                  onOpenEntry(it.pl.data, {
+                                    entryId: it.pl.data.besucherkennung,
+                                    createdAt: it.pl.data.beraterkennung,
+                                  })
+                                }
+                              >
+                                Fragebogen öffnen
+                              </Button>
+                              <button
+                                    type="button"
+                                  
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleSelection(it.id);
+                                    }}
+                                    onPointerDown={(e) => e.stopPropagation()}
+                                                        className={cn(
+                                    buttonVariants({ variant: "quiet", size: "icon" }),
+                                    "h-6 w-6",
+                                    selectedIds.has(it.id) && "bg-muted text-[hsl(var(--butah-500))]"
+                                  )}
+                                    aria-pressed={selectedIds.has(it.id)}
+                                  >
+                                    {selectedIds.has(it.id) ? <IconCheck size={14} /> : <IconPlus size={14} />}
+                              </button>
+                            </div>
                           </div>
                         </div>
-
                         {(() => {
                       const syphInfo = getSyphilisHistoryInfo(it.pl.data);
                       if (!syphInfo) return null;
-
                       return (
                         <div className="rounded-md border border-amber-400/60 bg-amber-50 px-3 py-2">
                           <div className="text-sm font-semibold text-amber-900">
@@ -368,12 +478,12 @@ export default function LabWorkspace({
                       </div>
                     </AccordionContent>
                 </AccordionItem>
+                      </div>
               ))}
             </Accordion>
           )}
         </div>
       </BrandPage>
-
       <Toaster />
     </BrandTheme>
   );

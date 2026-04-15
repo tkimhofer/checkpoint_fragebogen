@@ -1,7 +1,7 @@
 import { readDir, readTextFile } from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 import { fetch } from "@tauri-apps/plugin-http";
-
+import { buildApiUrl } from "@/lib/api/config";
 
 export type EntryListItem = {
   id: string;
@@ -12,17 +12,11 @@ export type EntryListItem = {
 
 export async function fetchEntries(apiBase: string, apiToken: string): Promise<EntryListItem[]> {
 
-  const url = new URL("entries?limit=50", apiBase).toString();
-
-  const headers: Record<string, string> = {
-    Accept: "application/json",
-  };
-
+  const base = apiBase.trim().replace(/\/+$/, "");
+  const url =  buildApiUrl(base, "/inbox/entries?limit=50"); // this defining /v1/...
+  const headers: Record<string, string> = {Accept: "application/json"};
   const token = apiToken.trim();
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  console.log("fetching entries with headers:", headers);
-
-
   const res = await fetch(url, { method: "GET", headers });
 
   if (!res.ok) {
@@ -30,7 +24,6 @@ export async function fetchEntries(apiBase: string, apiToken: string): Promise<E
   }
 
   const data = await res.json();
-  console.log('data_entries', data)
 
   if (!data.ok) {
     throw new Error("API returned ok=false");

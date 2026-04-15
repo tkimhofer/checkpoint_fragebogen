@@ -7,7 +7,7 @@
 
 .logo {
   height: 6em;
-  padding: 1.5em;
+  padding: 1.0em;
   will-change: filter;
   transition: filter 300ms;
 }
@@ -39,4 +39,28 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.react-calendar-heatmap text {
+  font-size: 8px;
+}
+
+.react-calendar-heatmap .react-calendar-heatmap-weekday-label {
+  font-size: 8px;
+}
+
+.react-calendar-heatmap rect {
+  rx: 2;
+  ry: 2;
+  width: 8px;
+  height: 8px;
+}
+
+.react-calendar-heatmap .react-calendar-heatmap-day {
+  stroke-width: 0;
+}
+
+.react-calendar-heatmap {
+  width: 100%;
+  max-width: 400px;
 }

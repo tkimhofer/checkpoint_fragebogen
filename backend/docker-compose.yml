@@ -1,14 +1,11 @@
 services:
   db:
     image: postgres:16
-#    container_name: chp-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-#    ports:
-#      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro
@@ -20,7 +17,6 @@ services:
 
   api:
     build: ./api
-#    container_name: chp-fastapi
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL}
@@ -44,4 +40,3 @@ volumes:
 # docker compose build --no-cache api
 
 # docker exec -it chp-postgres psql -U appuser -d appdb
-# docker compose --env-file .env.example exec db psql -U appuser -d appdb -c "\dt"

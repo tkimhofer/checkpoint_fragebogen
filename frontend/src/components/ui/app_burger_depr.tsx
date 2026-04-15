@@ -142,10 +142,8 @@ export function AppBurger({
     <SheetTitle>Einstellungen</SheetTitle>
   </SheetHeader>
 
-  {/* MAIN (scrollable) */}
   <div className="mt-4 flex-1 space-y-5 overflow-auto pr-1">
     
-    {/* Sprache */}
     {showLang && (
       <section className="space-y-2">
         <h4 className="text-sm font-semibold text-foreground">Sprache</h4>
@@ -178,8 +176,6 @@ export function AppBurger({
       </section>
     )}
 
-
-    {/* API-Endpunkt (NOT pinned) */}
     {(
       <div className="space-y-2">
         <h4 className="text-sm font-semibold text-foreground">API-Endpunkt</h4>
@@ -190,10 +186,8 @@ export function AppBurger({
           </p>
 
           <div className="space-y-3">
-            {/* Switch */}
             <BackendSwitch value={backend} onChange={onBackendChange} />
 
-            {/* Folder selector row */}
             {backend === "json" && (
             <div className="flex items-center gap-2">
                 <Button
@@ -213,19 +207,12 @@ export function AppBurger({
                 )}
             </div>
 
-          {/* <p className="text-xs text-muted-foreground break-all leading-relaxed">
-            {typeof endpoint === "string" && endpoint.trim().length > 0
-              ? endpoint
-              : "Speicherort auswählen"}
-          </p> */}
+        
         </section>
       </div>
     )}
 
-    {/* Reset */}
-    {/* <div className="text-[10px] text-muted-foreground">
-  debug: onClearDraft = {String(typeof onClearDraft)}
-</div> */}
+   
     {onClearDraft && (
       <div className="space-y-2">
         <h4 className="text-sm font-semibold text-foreground">
@@ -254,7 +241,6 @@ export function AppBurger({
     
   </div>
 
-  {/* FOOTER (pinned) */}
   <div className="pt-4">
     <Separator className="my-3" />
 
@@ -282,7 +268,6 @@ export function AppBurger({
         {contactEmail && (
           <button
             type="button"
-            // onClick={handleOpenMail}
             className="inline-flex items-center gap-2 text-left hover:text-foreground"
           >
             <Mail className="h-3.5 w-3.5" />

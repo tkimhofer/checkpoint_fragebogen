@@ -24,9 +24,12 @@
       "allow": [
          { "url": "http://127.0.0.1:8000/*" },
         { "url": "http://localhost:8000/*" },
-        { "url": "http://192.168.*.*:9000/*" },
+        
+        { "url": "http://192.168.10.195:8001/*" },
+        { "url": "http://192.168.10.195:9000/*" },
 
-        { "url": "https://checkpoint.tkimhofer.dev/*" }
+        { "url": "https://checkpoint.tkimhofer.dev/*" },
+        { "url": "https://but_ahd.tkimhofer.dev/*" }
       ]
     }
   ]

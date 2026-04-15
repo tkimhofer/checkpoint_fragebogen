@@ -142,7 +142,7 @@ export const GENDER: Opt[] = [
   // }  },
   // { code: "transman", labels: { de: "Trans Mann", en: "Trans man", tr: "Trans erkek", uk: "Трансчоловік" } },
   // { code: "transwoman", labels: { de: "Trans Frau", en: "Trans woman", tr: "Trans kadın", uk: "Трансжінка" } },
-  { code: "diverse", labels: { de: "Nicht-binär / divers", en: "Non-binary / diverse", tr: "Non-binary / diğer", uk: "Небінарна / інша" } },
+  { code: "diverse", labels: { de: "Nicht-binär / divers", en: "Non-binary / diverse", tr: "Non-binary", uk: "Небінарна / гендерно різноманітна" } },
   { code: "other", labels: { de: "Anders", en: "Other", tr: "Diğer", uk: "Інше" } },
 ];
 
@@ -190,18 +190,18 @@ export const RISK_SITUATION: Opt[] = [
   { code: "unknown_person", labels: { de: "Mit einer mir unbekannten Person", en: "With someone unknown to me", tr: "Tanımadığım biriyle", uk: "З незнайомою людиною" }},
   { code: "sexworker", labels: { de: "Mit Sexarbeiter:in oder Escort", en: "With a sex worker or escort", tr: "Seks işçisi veya eskort ile", uk: "Із секс-працівником/працівницею або ескортом" } },
 
-  { code: "professional_risk", labels: { de: "Berufliches Risiko (z.B. Nadelstich, Blutkontakt)", en: "Occupational risk (e.g. needle stick)", tr: "Mesleki risk (örn. iğne batması)", uk: "Професійний ризик (напр., укол голкою)" },},
+  { code: "professional_risk", labels: { de: "Berufliches Risiko (z.B. Nadelstich, Blutkontakt)", en: "Occupational risk (e.g. needle stick, blood contact)", tr: "Mesleki risk (örn. iğne batması, kan teması)", uk: "Професійний ризик (напр., укол голкою, контакт із кров’ю)" },},
   { code: "unkwn", labels: { de: "Nicht eindeutig zuzuordnen", en: "Cannot be attributed to a specific source", tr: "Net olarak ilişkilendirilemiyor", uk: "Неможливо однозначно визначити" }, },
-  { code: "other", labels: { de: "Andere Risikosituation (z.B. unsterile Injektion, medizinische Behandlung im Ausland)", en: "Other risk situation (e.g. tattoo, blood products)", tr: "Diğer riskli durum (örn. dövme, kan ürünleri)", uk: "Інша ризикова ситуація (напр., тату, препарати крові)" },},
+  { code: "other", labels: { de: "Andere Risikosituation (z.B. unsterile Injektion, medizinische Behandlung im Ausland)", en: "Other risk situation (e.g. unsterile injection, medical treatment abroad)", tr: "Diğer riskli durum (örn. steril olmayan enjeksiyon, yurt dışında tıbbi tedavi)", uk: "Інша ризикова ситуація (напр., нестерильні ін'єкції, медичне лікування за кордоном)" },},
 ];
 
 export const CONDOM_REASON: Opt[] = [
   { code: "partner_refused", labels: { de: "Mein:e Sexpartner:in wollte ohne Kondom", en: "My sexual partner wanted to have sex without a condom", tr: "Cinsel partnerim prezervatifsiz ilişki istedi", uk: "Мій сексуальний партнер хотів зайнятися сексом без презерватива" } },
   { code: "myself_refused", labels: { de: "Ich wollte ohne Kondom", en: "I wanted to have sex without a condom", tr: "Prezervatifsiz ilişki istedim", uk: "Я хотів/хотіла зайнятися сексом без презерватива" } },
-  { code: "partner_said_neg", labels: { de: "Mein:e Sexpartner:in hat mir gesagt, dass sie HIV-negativ ist", en: "My partner told me they are HIV negative", tr: "Partnerim HIV negatif olduğunu söyledi", uk: "Мій партнер сказав мені, що він/вона ВІЛ-негативний/на" } },
+  { code: "partner_said_neg", labels: { de: "Mein:e Sexpartner:in hat mir gesagt, dass sie HIV-negativ ist", en: "My partner told me they are HIV-negative", tr: "Partnerim HIV negatif olduğunu söyledi", uk: "Мій партнер сказав мені, що він/вона ВІЛ-негативний/на" } },
   { code: "partner_in_tm", labels: { de: "… wird behandelt und ist nicht mehr ansteckend", en: "… is treated and no longer infectious", tr: "… tedavi görüyor ve artık bulaştırıcı değil", uk: "… лікується і вже не заразний/на" } },
-  { code: "trusted_partner", labels: { de: "Ich nahm an, Partner:in ist HIV-negativ", en: "I assumed partner is HIV negative", tr: "Partnerimin HIV negatif olduğunu varsaydım", uk: "Припустив/ла, що партнер ВІЛ-негативний" } },
-  { code: "no_hardon", labels: { de: "Mit Kondom schwer Erektion", en: "Difficult erection with condoms", tr: "Prezervatif ile ereksiyon zor", uk: "Важко досягти ерекції з презервативом" } },
+  { code: "trusted_partner", labels: { de: "Ich nahm an, Partner:in ist HIV-negativ", en: "I assumed partner is HIV-negative", tr: "Partnerimin HIV negatif olduğunu varsaydım", uk: "Припустив/ла, що партнер ВІЛ-негативний" } },
+  { code: "no_hardon", labels: { de: "Mit Kondom schwer Erektion", en: "Erection difficult with a condom", tr: "Prezervatif ile ereksiyon zor", uk: "Важко досягти ерекції з презервативом" } },
   { code: "no_condom", labels: { de: "Kein Kondom dabei", en: "No condom with me", tr: "Yanımda prezervatif yoktu", uk: "Не було презерватива" } },
   { code: "noidea", labels: { de: "Weiß nicht", en: "I don't know", tr: "Bilmiyorum", uk: "Не знаю" } },
   { code: "other", labels: { de: "Andere", en: "Other", tr: "Diğer", uk: "Інше" } },
@@ -209,7 +209,7 @@ export const CONDOM_REASON: Opt[] = [
 
 export const STI_HISTORY: Opt[] = [
   { code: "syphilis", labels: { de: "Syphilis", en: "Syphilis", tr: "Frengi", uk: "Сифіліс" } },
-  { code: "mkpox", labels: { de: "Affenpocken", en: "Monkeypox", tr: "Maymunpox", uk: "Монкіпокс" } },
+  { code: "mkpox", labels: { de: "Affenpocken (Mpox)", en: "Mpox", tr: "Maymun çiçeği (Mpox)", uk: "Мавпяча віспа (Mpox)" } },
  
   { code: "chlamydia", labels: { de: "Chlamydien", en: "Chlamydia", tr: "Klamidya", uk: "Хламідіоз" } },
   { code: "gonorrhea", labels: { de: 'Gonorrhoe ("Tripper")', en: 'Gonorrhea ("the clap")', tr: "Bel soğukluğu", uk: "Гонорея" } },
@@ -223,7 +223,7 @@ export const STI_HISTORY: Opt[] = [
 
 export const DRUG_USE: Opt[] = [
   { code: "none", labels: { de: "Nein", en: "No", tr: "Hayır", uk: "Ні" } },
-  { code: "smoked_snorted", labels: { de: "Ja, ohne Spritzen (geraucht, geschnupft, oral oder anal)", en: "Yes, smoked/snorted", tr: "Evet, içilmiş/çekilmiş", uk: "Так, курив/нюхав" } },
+  { code: "smoked_snorted", labels: { de: "Ja, ohne Spritzen (geraucht, geschnupft, oral oder anal)", en: "Yes, without injecting (smoked, snorted, oral or anal)", tr: "Evet, enjeksiyon olmadan (içilerek, burundan çekilerek, oral veya anal)", uk: "Так, без ін'єкцій (куріння, нюхання, перорально або анально)" } },
   { code: "injected", labels: { de: "Ja, mit Spritzen (injiziert)", en: "Yes, injected", tr: "Evet, enjekte", uk: "Так, ін'єкційно" } },
 ];
 

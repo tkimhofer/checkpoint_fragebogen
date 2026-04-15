@@ -111,13 +111,13 @@ export function KeyValueDenseList({ data }: { data: Record<string, unknown> }) {
   );
 }
 
-type Jsonish =
-  | null
-  | boolean
-  | number
-  | string
-  | Jsonish[]
-  | { [key: string]: Jsonish };
+// type Jsonish =
+//   | null
+//   | boolean
+//   | number
+//   | string
+//   | Jsonish[]
+//   | { [key: string]: Jsonish };
 
 export function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);

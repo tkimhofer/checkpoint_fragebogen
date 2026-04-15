@@ -1,7 +1,7 @@
 # 🩺 Checkpoint Fragebogen App
 
 Desktop-Anwendung zur anonymen STI-Testaufnahme\
-(Checkpoint Aids Hilfe Duisburg / Kreis Wesel).
+(Beratung und Test in der Aids Hilfe Duisburg & Kreis Wesel).
 
 Multilinguale, datensparsame Erfassung für den Einsatz vor Ort.\
 Native Builds für **Windows (.exe)** und **macOS (.dmg)** stehen unter
@@ -29,7 +29,7 @@ Die App kann entweder:
 
 3.  Backend konfigurieren (z. B. Test-Server):
 
-        https://checkpoint.tkimhofer.dev
+        https://but_adh.tkimhofer.dev
 
 (API-Token erforderlich -- auf Anfrage erhältlich)
 

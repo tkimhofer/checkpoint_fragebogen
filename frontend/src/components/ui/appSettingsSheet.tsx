@@ -15,10 +15,12 @@ import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/co
 import { open as openExternal } from "@tauri-apps/plugin-shell";
 import { Mail } from "lucide-react";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
+import { buildApiUrl } from "@/lib/api/config";
 
 
 import type { Lang } from "@/i18n/translations";
-import { getSetting } from "@/lib/settingsStore";
+// import { getSetting } from "@/lib/settingsStore";
+// import { toggleDark } from "@/lib/theme"
 
 const COUNTRY_FOR_LANG: Record<Lang, string> = {
   de: "DE",
@@ -87,12 +89,9 @@ export function AppSettingsSheet({
       <SheetTitle>Einstellungen</SheetTitle>
     </SheetHeader>
 
-    {/* CONTENT */}
     <div className="mt-4 flex-1 overflow-auto pr-1">
       <div className="flex min-h-full flex-col gap-5">
-        {/* TOP AREA */}
         <div className="space-y-5">
-          {/* Sprache (collector only) */}
           {showLang && (
             <section className="space-y-2">
               <h4 className="text-sm font-semibold text-foreground">Sprache</h4>
@@ -110,7 +109,6 @@ export function AppSettingsSheet({
                   >
                     <RadioGroupItem id={`lang-${l}`} value={l} />
                     <span className="text-sm">{LANG_NAMES[l]}</span>
-
                     <span className="ml-auto">
                       <ReactCountryFlag
                         countryCode={COUNTRY_FOR_LANG[l]}
@@ -125,7 +123,6 @@ export function AppSettingsSheet({
             </section>
           )}
 
-          {/* Collector-only actions (place near top) */}
           {mode === "collector" && onClearDraft && (
             <section className="rounded-lg border p-4 space-y-3">
               <div className="text-sm font-semibold">Fragebogen zurücksetzen</div>
@@ -136,29 +133,22 @@ export function AppSettingsSheet({
           )}
         </div>
 
-        {/* SPACER pushes backend to bottom (above footer) */}
         <div className="flex-1" />
 
-        {/* BOTTOM AREA: Backend section */}
         <section className="rounded-lg border p-4 space-y-3">
           <div className="text-sm font-semibold">Backend Auswahl</div>
-
-          <BackendSwitch value={backend} onChange={setBackend} />
-
+          <BackendSwitch value={backend} onChange={setBackend}/>
           {backend === "json" && (
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Lokales Datenverzeichnis</div>
-
               <div className="flex items-center gap-2">
                 <Folder className="h-4 w-4 text-muted-foreground" />
-
                 <button
                   onClick={handleSelectFolder}
                   className="text-xs text-primary hover:underline break-all"
                 >
                   {dataFolder?.trim() || "Speicherort auswählen"}
                 </button>
-
                 {dataFolder && (
                   <button
                     onClick={handleSelectFolder}
@@ -184,7 +174,6 @@ export function AppSettingsSheet({
                 spellCheck={false}
                 inputMode="url"
               />
-
               <Button
                 type="button"
                 className={`
@@ -197,8 +186,9 @@ export function AppSettingsSheet({
                   try {
                     setHealthState("loading");
 
-                    const base = apiBase.trim();
-                    const url = new URL("/health", base.endsWith("/") ? base : base + "/").toString();
+                    const base = apiBase.trim().replace(/\/+$/, "");;
+                    const url =  buildApiUrl(base, "/system/health");
+                    // const url = new URL("/health", base.endsWith("/") ? base : base + "/").toString();
 
                     const res = await tauriFetch(url, {
                       method: "GET",
@@ -209,19 +199,14 @@ export function AppSettingsSheet({
                         : {}),
                     }
                     });
-
-                    console.log("health status", res.status);
-
+                    // console.log("health status", res.status);
                     if (res.ok) {
                       setHealthState("success");
                       setTimeout(() => setHealthState("idle"), 2000);
                     } else {
                       setHealthState("error");
                       setTimeout(() => setHealthState("idle"), 2500);
-                    }
-                    // setApiToken(apiToken.trim());
-                    // console.log("after setApiToken, store reads:", await getSetting("apiToken"));
-                    
+                    }                    
                   } catch (e) {
                     console.error("health fetch failed", e);
                     setHealthState("error");
@@ -235,7 +220,6 @@ export function AppSettingsSheet({
                 {healthState === "error" && "✕"}
               </Button>
             </div>
-
             <div className="text-xs text-muted-foreground">API Token</div>
             <input
               className="h-9 w-full rounded-md border bg-background px-3 text-sm"

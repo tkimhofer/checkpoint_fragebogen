@@ -20,53 +20,81 @@
   --popover-foreground: 222 47% 11%;
 
   /* AHD Indigo ≈ hsl(230,44%,45%) */
-  --primary: 230 44% 45%;
+  /* --primary: 230 44% 45%;
+  --primary-foreground: 0 0% 100%; */
+  /* --primary: 184 55% 38%;
+  --primary-foreground: 0 0% 100%; */
+
+  /* BuTAH SCALE */
+
+  --butah-50:  184 70% 95%;
+  --butah-100: 184 60% 88%;
+  --butah-200: 184 55% 78%;
+  --butah-300: 184 50% 65%;
+  --butah-400: 184 48% 55%;
+  --butah-500: 184 55% 42%;  /* ← main UI color */
+  --butah-600: 184 60% 36%;  /* hover */
+  --butah-700: 184 65% 30%;
+  --butah-800: 184 70% 22%;
+  --butah-900: 184 75% 15%;
+
+  /* shadcn tokens */
+
+  /* --primary: 184 55% 42%; */
+  --primary: 218 28% 38%;
   --primary-foreground: 0 0% 100%;
 
-  /* muted/slate */
-  --secondary: 215 16% 92%;
+  --accent: 218 20% 60%;
+  --muted: 210 20% 95%;
+  --border: 214 20% 85%;
+  --input: 214 20% 85%;
+  --ring: 218 28% 50%;
+
+  
+  --secondary: var(--butah-100);
   --secondary-foreground: 222 47% 15%;
 
-  --muted: 215 20% 95%;
-  --muted-foreground: 215 15% 40%;
+  --muted-foreground: 184 25% 35%;
 
-  /* accents */
-  --accent: 199 70% 65%;        /* Sky */
-  --accent-foreground: 218 41% 15%;
+  --accent-foreground: 0 0% 100%;
+
+  
 
   /* statuses */
   --destructive: 355 74% 48%;   /* Ribbon Red */
   --destructive-foreground: 0 0% 100%;
   --success: 158 48% 43%;       /* Leaf (custom use) */
 
-  --border: 214 32% 88%;
+  /* --border: 214 32% 88%;
   --input: 214 32% 88%;
-  --ring: 230 44% 45%;
+  --ring: 230 44% 45%; */
   --radius: 0.75rem;            /* rounded-xl */
 }
 
 /* dark (optional) */
-.dark {
+/* .dark {
   --background: 222 47% 10%;
   --foreground: 210 40% 96%;
   --card: 222 47% 12%;
   --card-foreground: 210 40% 96%;
   --popover: 222 47% 12%;
   --popover-foreground: 210 40% 96%;
-  --primary: 230 44% 60%;
+
   --primary-foreground: 222 47% 10%;
   --secondary: 225 15% 18%;
   --secondary-foreground: 210 40% 96%;
-  --muted: 225 15% 18%;
   --muted-foreground: 215 20% 75%;
-  --accent: 199 70% 60%;
   --accent-foreground: 222 47% 10%;
   --destructive: 355 74% 55%;
   --destructive-foreground: 222 47% 10%;
-  --border: 223 13% 24%;
-  --input: 223 13% 24%;
-  --ring: 230 44% 60%;
-}
+  --primary: 184 55% 42%;
+  --accent: 184 40% 35%;
+  --ring: 184 48% 55%;
+  --muted: 184 30% 20%;
+  --border: 184 20% 25%;
+  --input: 184 20% 25%;
+
+} */
 
 }
 
