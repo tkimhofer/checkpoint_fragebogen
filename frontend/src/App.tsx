@@ -12,7 +12,7 @@ type OpenedEntry = {
   createdAt?: string;
 };
 
-const CURR_VERSION = "0.9.1";
+const CURR_VERSION = "0.9.2";
 
 
 
@@ -100,6 +100,7 @@ function AppShell() {
           onCloseReadOnly={closeCollectorView}
           headerRight={workspaceSwitch}
           onRehydrated={() => {}}
+          hostname={hostname}
         />
       </div>
       <div className={workspace === "lab" ? "block" : "hidden"}>

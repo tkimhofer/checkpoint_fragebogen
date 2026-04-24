@@ -101,12 +101,12 @@ export default function LabWorkspace({
   headerRight?: React.ReactNode;
 }) {
 
-  React.useEffect(() => {
-    (async () => {
-      const dir = await appDataDir();
-      console.log("App data dir:", dir);
-    })();
-  }, []);
+  // React.useEffect(() => {
+  //   (async () => {
+  //     const dir = await appDataDir();
+  //     console.log("App data dir:", dir);
+  //   })();
+  // }, []);
 
   // const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
   const { backend, dataFolder, apiBase, apiToken} = useAppSettings();

@@ -1,6 +1,7 @@
 frontend/node_modules
 frontend/dist
 backend/services/api/venv
+backend/db/backups
 **/.env
 __pycache__/
 *.pyc
