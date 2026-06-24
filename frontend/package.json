@@ -9,7 +9,9 @@
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",
-    "tauri": "cargo tauri dev",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
     "prepare": "husky"
   },
   "dependencies": {
