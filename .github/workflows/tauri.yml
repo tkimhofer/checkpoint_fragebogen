@@ -23,11 +23,15 @@ jobs:
         with:
           node-version: 22
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
       - uses: dtolnay/rust-toolchain@stable
 
       - name: FE dependencies
         working-directory: frontend
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         uses: tauri-apps/tauri-action@v0
