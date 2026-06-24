@@ -12,7 +12,7 @@ type OpenedEntry = {
   createdAt?: string;
 };
 
-const CURR_VERSION = "1.0.0";
+const CURR_VERSION = "1.0.1";
 
 
 
