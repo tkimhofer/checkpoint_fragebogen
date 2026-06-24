@@ -10,7 +10,6 @@ export type QuestionGroup = {
   answers: { var: string; value: unknown }[];
 };
 
-// old-style QUESTION defs (kept for backwards-compat)
 export const QUESTIONS = QUESTION_BANK.map((q) => ({
   no: q.no,
   qid: q.qid,
@@ -19,7 +18,6 @@ export const QUESTIONS = QUESTION_BANK.map((q) => ({
   when: q.when,
 }));
 
-// if old code needs these types, re-export from types.ts
 export * from "./types";
 
 export function buildQuestionGroups(responses: Responses, lang: Lang): QuestionGroup[] {

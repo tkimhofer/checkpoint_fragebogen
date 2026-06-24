@@ -43,7 +43,6 @@ export function parseDOBFromId(id: string | undefined) {
 
   if (mm < 1 || mm > 12) return null;
 
-  // assume 1900–1999 for yy > currentYear, else 2000+
   const currentYear = new Date().getFullYear() % 100;
   const fullYear = yy > currentYear ? 1900 + yy : 2000 + yy;
 
@@ -51,7 +50,6 @@ export function parseDOBFromId(id: string | undefined) {
 };
 
 
-///WOHNORT nach PLZ
 type RegionGroup = "Duisburg" | "Kreis Wesel" | "Anders" | "Keine Angabe";
 
 export const mapPlz3ToRegion = (plz3: string | null | undefined): RegionGroup => {
@@ -82,10 +80,8 @@ export const countRegions = (entries: any[]) => {
   return counts;
 };
 
-// export const handleStats = (items: any[], selectedIds: Set<string>) => {
-//   const selectedEntries = items.filter((it) => selectedIds.has(it.id));
+
 export const computeStats = (selectedEntries: any[]) => {
-  // const selectedEntries = items.filter((it) => selectedIds.has(it.id));
   if (selectedEntries.length === 0) return;
 
   const genderCounts = {

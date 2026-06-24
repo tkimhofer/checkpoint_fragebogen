@@ -23,15 +23,15 @@ const HIV_TEST_COUNT_LABEL = {
 }
 
 const CONFIRM_LABEL = {
-  de: "Der HIV-Test wurde bei der AIDS-Hilfe Duisburg & Kreis Wesel durchgeführt",
-  en: "The HIV test was carried out at AIDS-Hilfe Duisburg & Kreis Wesel",
-  tr: "HIV testi AIDS-Hilfe Duisburg & Kreis Wesel’de yapıldı",
-  uk: "Тест на ВІЛ було проведено в «AIDS-Hilfe Duisburg & Kreis Wesel»",
+  de: "Der HIV-Test wurde bei der AIDS-Hilfe Duisburg / Kreis Wesel e.V. durchgeführt",
+  en: "The HIV test was carried out at AIDS-Hilfe Duisburg / Kreis Wesel e.V.",
+  tr: "HIV testi AIDS-Hilfe Duisburg / Kreis Wesel e.V.’de yapıldı",
+  uk: "Тест на ВІЛ було проведено в «AIDS-Hilfe Duisburg / Kreis Wesel e.V.»",
 }
 
 type ConditionalFieldProps = {
   lang?: Lang
-  answer: "yes" | "no" | ""    // controlled
+  answer: "yes" | "no" | ""
   year?: number | null
   count?: number | null
   checked: boolean
@@ -51,10 +51,7 @@ export function ConditionalField({
   checked,
   onChange,
 }: ConditionalFieldProps) {
-  // unique ids (prevents collisions if multiple instances)
   const idBase = React.useId()
-  // const idNo = `${idBase}-no`
-  // const idYes = `${idBase}-yes`
   const idYear = `${idBase}-year`
   const idCount = `${idBase}-count`
   const idChk = `${idBase}-confirm`

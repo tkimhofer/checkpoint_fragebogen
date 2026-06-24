@@ -27,7 +27,6 @@ export function StatsModal({
 
     const csv = rowsToCsv(rows);
     const firstDate = rows[0]?.Datum ?? dayjs().format("YYYY-MM-DD");
-    // downloadCsv(`stats_${firstDate}.csv`, csv);
     await saveCsvWithDialog(`BuT_Statistik_${firstDate}.csv`, csv);
   };
 

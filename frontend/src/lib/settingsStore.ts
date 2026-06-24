@@ -35,14 +35,6 @@ export async function getSetting<K extends keyof SettingsDefaults>(
   return (v ?? DEFAULTS[key]) as SettingsDefaults[K];
 }
 
-// export async function setSetting<K extends keyof SettingsDefaults>(
-//   key: K,
-//   value: SettingsDefaults[K],
-// ): Promise<void> {
-//   const store = await storePromise;
-//   await store.set(key, value);
-//   // autoSave: true -> no explicit save() needed
-// }
 
 export async function setSetting<K extends keyof SettingsDefaults>(
   key: K,

@@ -1,16 +1,8 @@
 import React, { useState, useEffect, useRef } from "react"
 import { DatePickerInput } from "@mantine/dates"
-// import { DatePicker } from "@mantine/dates"
-// import { Indicator, Box } from "@mantine/core"
 import { buildApiUrl } from "@/lib/api/config"
 import dayjs from "dayjs"
 import { fetch } from "@tauri-apps/plugin-http";
-
-
-// type IntakeDay = {
-//   date: string
-//   count: number
-// }
 
 
 export default function IntakeDatePicker({
@@ -25,20 +17,13 @@ export default function IntakeDatePicker({
   onSelectDate: (isoDate: string | null) => void;
 }) {
 
-  // console.log("IntakeDatePicker render")
-  // console.log("token:", apiToken)
-  // const [internal, setInternal] = useState<Date | null>(null);
-
   const [value, setValue] = useState<Date | null>(null) 
   const [intakeDays, setIntakeDays] = useState<string[]>([]) // what is returned from api (nb of intakes per day)
-  // const [month, setMonth] = useState<Date>(new Date())
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date()); //useState(new Date())
 
-  // add items state if you want list here
   const [items, setItems] = useState<any[]>([]);
   const lastIsoRef = useRef<string | null>(null);
 
-  // sync external value → Date
   useEffect(() => {
     if (!value1) {
       setValue(null);
@@ -64,7 +49,6 @@ export default function IntakeDatePicker({
     const headers: Record<string, string> = {Accept: "application/json"};
     const token = apiToken.trim();
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    // console.log("url-endpoint", url);
 
     fetch(url, {
       method: "GET",
@@ -73,8 +57,6 @@ export default function IntakeDatePicker({
       .then(async (res) => {
         const json = await res.json();
         if (!res.ok) throw new Error(JSON.stringify(json));
-        // console.log("ce status:", res.status);
-        // console.log("ce payload:", json);
         return json;
       })
       .then((list) => setItems(list))
@@ -136,8 +118,6 @@ export default function IntakeDatePicker({
         return hasData
         ? {
           style: {
-            // backgroundColor: "#EEF4F4", //"transparent",
-            // color: "#24343A",
             boxShadow: "0 0 0 3px #A8D6D8 inset",
             borderRadius: "6px",
             fontWeight: 700,

@@ -7,7 +7,7 @@ export type Lang = "de" | "en" | "tr" | "uk";
 export type Opt = { 
   code: string; 
   labels: Record<Lang, string>; 
-  group?: string; // new → group name
+  group?: string; 
 };
 
 export const QTITLE: Record<string, Record<Lang, string>> = {
@@ -126,22 +126,10 @@ export const ORIENTATION: Opt[] = [
   { code: "other", labels: { de: "Anders", en: "Other", tr: "Diğer", uk: "Інше" } },
 ];
 
-// const SEX_BIRTH: Opt[] = [
-//   { code: "male", labels: { de: "Männlich", en: "Male", tr: "Erkek", uk: "Чоловіча" } },
-//   { code: "female", labels: { de: "Weiblich", en: "Female", tr: "Kadın", uk: "Жіноча" } },
-// ];
 
 export const GENDER: Opt[] = [
   { code: "male", labels: { de: "Männlich", en: "Male", tr: "Erkek", uk: "Чоловіча" } },
   { code: "female", labels: { de: "Weiblich", en: "Female", tr: "Kadın", uk: "Жіноча" } },
-  // { code: "intersex", labels: { 
-  //   de: "Intersex", 
-  //   en: "Intersex", 
-  //   tr: "İnterseks", 
-  //   uk: "Інтерсекс" 
-  // }  },
-  // { code: "transman", labels: { de: "Trans Mann", en: "Trans man", tr: "Trans erkek", uk: "Трансчоловік" } },
-  // { code: "transwoman", labels: { de: "Trans Frau", en: "Trans woman", tr: "Trans kadın", uk: "Трансжінка" } },
   { code: "diverse", labels: { de: "Nicht-binär / divers", en: "Non-binary / diverse", tr: "Non-binary", uk: "Небінарна / гендерно різноманітна" } },
   { code: "other", labels: { de: "Anders", en: "Other", tr: "Diğer", uk: "Інше" } },
 ];
@@ -213,8 +201,6 @@ export const STI_HISTORY: Opt[] = [
  
   { code: "chlamydia", labels: { de: "Chlamydien", en: "Chlamydia", tr: "Klamidya", uk: "Хламідіоз" } },
   { code: "gonorrhea", labels: { de: 'Gonorrhoe ("Tripper")', en: 'Gonorrhea ("the clap")', tr: "Bel soğukluğu", uk: "Гонорея" } },
-  // { code: "hpv", labels: { de: "HPV", en: "HPV", tr: "HPV", uk: "HPV" } },
-  // { code: "herpes", labels: { de: "Herpes", en: "Herpes", tr: "Uçuk (Herpes)", uk: "Герпес" } },
   { code: "hepa", labels: { de: "Hepatitis A", en: "Hepatitis A", tr: "Hepatit A", uk: "Гепатит A" } },
   { code: "hepb", labels: { de: "Hepatitis B", en: "Hepatitis B", tr: "Hepatit B", uk: "Гепатит B" } },
   { code: "hepc", labels: { de: "Hepatitis C", en: "Hepatitis C", tr: "Hepatit C", uk: "Гепатит C" } },
@@ -247,7 +233,6 @@ export const YES_NO_UNKNOWN_INF_B: Opt[] = [
   { code: "infection", labels: { de: "Ich hatte Hepatitis B", en: "I had hepatitis B", tr: "Hepatit B geçirdim", uk: "Я переніс/перенесла гепатит B" } },
 ];
 
-// Sex & Schutz (radio options used by risk_gv + risk_condom)
 const YES_NO_ACTIVE_PASSIVE: Opt[] = [
   { code: "no", labels: { de: "Nein", en: "No", tr: "Hayır", uk: "Ні" } },
   { code: "yes_both", labels: { de: "Ja, aktiv & passiv", en: "Yes, insertive and receptive", tr: "Evet, aktif ve pasif", uk: "Так, інсертивно і рецептивно" } },
@@ -258,7 +243,6 @@ const YES_NO_ACTIVE_PASSIVE: Opt[] = [
 export const RISK_GV: Opt[] = YES_NO_ACTIVE_PASSIVE;
 export const RISK_CONDOM: Opt[] = YES_NO_ACTIVE_PASSIVE;
 
-// Berater: Testanforderungen
 export const TESTANFORDERUNGEN: Opt[] = [
   { code: "counsel", labels: { de: "Nur Beratung / keine Tests", en: "Counsel only", tr: "Nur Beratung", uk: "Лише консультація" }, group: "Beratung" },
 
@@ -330,8 +314,8 @@ export const HIV_TEST_COUNT_LABEL = {
 }
 
 export const CONFIRM_LABEL = {
-  de: "Der HIV-Test wurde bei der AIDS-Hilfe Duisburg & Kreis Wesel durchgeführt",
-  en: "The HIV test was carried out at AIDS-Hilfe Duisburg & Kreis Wesel",
-  tr: "HIV testi AIDS-Hilfe Duisburg & Kreis Wesel’de yapıldı",
-  uk: "Тест на ВІЛ було проведено в «AIDS-Hilfe Duisburg & Kreis Wesel»",
+  de: "Der HIV-Test wurde bei der AIDS-Hilfe Duisburg / Kreis Wesel durchgeführt",
+  en: "The HIV test was carried out at AIDS-Hilfe Duisburg / Kreis Wesel",
+  tr: "HIV testi AIDS-Hilfe Duisburg / Kreis Wesel’de yapıldı",
+  uk: "Тест на ВІЛ було проведено в «AIDS-Hilfe Duisburg / Kreis Wesel»",
 }

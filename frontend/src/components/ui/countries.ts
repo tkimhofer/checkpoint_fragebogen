@@ -1,7 +1,3 @@
-// Auto-generated countries.ts
-// Covers current countries (UN members + Holy See + State of Palestine + Kosovo (XK) for practicality).
-// Names are provided dynamically via Intl.DisplayNames at runtime for de/en/tr/uk with English fallbacks.
-
 export type Country = {
   code: string;
   labels: {
@@ -12,25 +8,20 @@ export type Country = {
   };
 };
 
-// Prefer runtime localization to avoid shipping a giant static translation table.
-// Fallback to English if a locale is unavailable in the runtime.
 function nameFor(code: string, locale: string): string {
   try {
-    // Some environments may not support all locales; catch and fallback.
     const dn = new (Intl as any).DisplayNames([locale], { type: "region" });
     const n = dn.of(code);
     if (typeof n === "string") return n;
   } catch {}
-  // Fallback: use English
   try {
     const dn = new (Intl as any).DisplayNames(["en"], { type: "region" });
     const n = dn.of(code);
     if (typeof n === "string") return n;
   } catch {}
-  return code; // ultimate fallback
+  return code;
 }
 
-// Build labels object for all supported languages
 export function makeCountryLabels(code: string) {
   return {
     de: nameFor(code, "de"),

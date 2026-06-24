@@ -11,7 +11,7 @@ const T = {
 
 export function YesNoChips({
   lang,
-  value,                 // "yes" | "no" | ""
+  value,
   onChange,
   className,
 }: {
@@ -42,7 +42,6 @@ export function YesNoChips({
   return (
     <div role="group" aria-label="Ja / Nein"
          className={clsx("inline-flex overflow-hidden rounded-lg border", className)}>
-      {/* Place Nein first to reduce accidental positive taps */}
       <div className="border-r"><Btn v="no" label={t.no} /></div>
       <Btn v="yes" label={t.yes} />
     </div>

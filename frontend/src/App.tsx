@@ -1,4 +1,4 @@
-// App.tsx
+
 import React from "react";
 import LabWorkspace from "@/workspaces/LaborWorkspace";
 import CollectorWorkspace from "@/workspaces/BeraterWorkspace";
@@ -12,7 +12,7 @@ type OpenedEntry = {
   createdAt?: string;
 };
 
-const CURR_VERSION = "0.9.2";
+const CURR_VERSION = "1.0.0";
 
 
 
@@ -43,9 +43,6 @@ function AppShell() {
       cancelled = true;
     };
   }, []); 
-
-  // const hostname = invoke<string>("get_hostname");
-  // console.log("Hostname:", hostname);
 
   const openInCollector = (payloadData: any, meta?: { entryId?: string; createdAt?: string }) => {
     setOpenedEntry({ payloadData, source: "lab", ...meta });

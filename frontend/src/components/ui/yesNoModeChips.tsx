@@ -16,7 +16,7 @@ export function YesNoSeparatedChips({
   className,
 }: {
   lang: Lang;
-  value: string;                     // "no" | "yes_insertive" | "yes_receptive" | "yes_both" | ""
+  value: string;
   onChange: (v: string) => void;
   className?: string;
 }) {
@@ -43,26 +43,23 @@ export function YesNoSeparatedChips({
 
   return (
     <div className={clsx("flex items-center", className)}>
-      {/* Left: Nein */}
       <div className="inline-flex overflow-hidden rounded-lg border">
         <Chip v="no" label={t.no} />
       </div>
 
-      {/* Spacer + non-clickable "Ja" label */}
       <div style={{ width: 16 }} aria-hidden />
       <span
         className={clsx(
           "inline-flex items-center px-3 py-1 text-sm rounded-md",
           isYes
-            ? "font-semibold text-foreground bg-muted"   // emphasized when a yes-mode is active
-            : "text-muted-foreground"                    // subtle when 'no' is selected
+            ? "font-semibold text-foreground bg-muted"
+            : "text-muted-foreground"
         )}
       >
         {t.yes}
       </span>
       <div style={{ width: 8 }} aria-hidden />
 
-      {/* Right: Ja-Optionen */}
       <div className="inline-flex overflow-hidden rounded-lg border" role="group" aria-label="Ja-Optionen">
         <div className="flex">
           <div className="border-r">

@@ -23,10 +23,7 @@ export function isApplicable(q: Question, responses: Responses) {
 function isOtherSelected(baseVar: string, responses: Responses) {
   const v = responses[baseVar];
 
-  // checkbox style: ["foo","other"]
   if (Array.isArray(v)) return v.includes(OTHER_CODE);
-
-  // radio style: "other"
   return v === OTHER_CODE;
 }
 
@@ -38,28 +35,23 @@ function isVarRelevant(varName: string, responses: Responses) {
     ? (responses["sti_history_which"] as string[])
     : [];
 
-  // STI: "which" only relevant if yesno === yes
   if (varName === "sti_history_which") {
     return stiYes;
   }
 
-  // STI: years only relevant if yesno === yes AND at least one STI selected
   if (varName === "sti_history_years") {
     return stiYes && stiWhich.length > 0;
   }
 
-  // STI: free text only relevant if yesno === yes AND "other" selected
   if (varName === "sti_history_which_other") {
     return stiYes && stiWhich.includes("other");
   }
 
-  // generic "_other" fields
   if (varName.endsWith("_other")) {
     const base = varName.slice(0, -"_other".length);
     return isOtherSelected(base, responses);
   }
 
-  // HIV prev details only if prev === yes
   if (
     varName === "hiv_test_prev_count" ||
     varName === "hiv_test_prev_year" ||
@@ -71,38 +63,6 @@ function isVarRelevant(varName: string, responses: Responses) {
   return true;
 }
 
-
-// function isVarRelevant(varName: string, responses: Responses) {
-//   // only relevant if base var selected OTHER
-//   if (varName.endsWith("_other")) {
-//     const base = varName.slice(0, -"_other".length);
-//     return isOtherSelected(base, responses);
-//   }
-
-//   const prev = (responses["hiv_test_prev"] ?? "") as string;
-//   if (
-//       varName === "hiv_test_prev_count" ||
-//       varName === "hiv_test_prev_year" ||
-//       varName === "hiv_test_prev_confirm"
-//   ) {
-//       return prev === "yes";
-//   }
-
-//   const prev1 = (responses["sti_history_yesno"] ?? "") as string;
-//   if (
-//       varName === "sti_history_which" ||
-//       varName === "sti_history_years" ||
-//       varName === "sti_history_which_other"
-//   ) {
-//       return prev1 === "yes";
-//   }
-
-//   if (varName === "besucher_info" || varName === "beraterkommentar") {
-//     return false;
-//   }
-
-//   return true;
-// }
 
 
 export function getRelevantQuestions(responses: Responses, bank: Question[] = QUESTION_BANK) {
@@ -120,17 +80,7 @@ export function getVarsWithQuestionNo(responses: Responses, bank: Question[] = Q
       }))
   );
 }
-// export function getVarsWithQuestionNo(responses: Responses, bank: Question[] = QUESTION_BANK) {
-//   return getRelevantQuestions(responses, bank).flatMap((q) =>
-//     q.vars.map((v) => ({
-//       questionNo: q.no,
-//       qid: q.qid,
-//       var: v,
-//     }))
-//   );
-// }
 
-/** For payload: drop empty + drop {_state:"missing"} entirely */
 export function buildPayloadData(responses: Responses, bank: Question[] = QUESTION_BANK) {
   const vars = getVarsWithQuestionNo(responses, bank);
 
@@ -148,21 +98,11 @@ export function buildPayloadData(responses: Responses, bank: Question[] = QUESTI
   );
 }
 
-// type Responses = Record<string, unknown>;
-// type Question = {
-//   var: string;
-//   type?: "text" | "textarea" | "radio" | "checkbox" | string;
-//   // optionally options, etc
-// };
-
 export function rehydrateResponsesFromPayloadData(
   payloadData: Record<string, unknown>,
   bank: Question[] = QUESTION_BANK
 ): Responses {
-  // Pass 1: start from payload
   const out: Responses = { ...(payloadData ?? {}) } as Responses;
-
-  // Pass 2: fill defaults + normalize only for relevant questions
   const relevant = getRelevantQuestions(out, bank);
 
   for (const q of relevant) {
@@ -188,8 +128,3 @@ export function rehydrateResponsesFromPayloadData(
 
   return out;
 }
-
-
-
-// const payloadData = entry.payload.data; // from API
-// setResponses(rehydrateResponsesFromPayloadData(payloadData));

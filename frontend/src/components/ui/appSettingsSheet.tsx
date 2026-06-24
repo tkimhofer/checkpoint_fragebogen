@@ -188,7 +188,6 @@ export function AppSettingsSheet({
 
                     const base = apiBase.trim().replace(/\/+$/, "");;
                     const url =  buildApiUrl(base, "/system/health");
-                    // const url = new URL("/health", base.endsWith("/") ? base : base + "/").toString();
 
                     const res = await tauriFetch(url, {
                       method: "GET",
@@ -199,7 +198,6 @@ export function AppSettingsSheet({
                         : {}),
                     }
                     });
-                    // console.log("health status", res.status);
                     if (res.ok) {
                       setHealthState("success");
                       setTimeout(() => setHealthState("idle"), 2000);

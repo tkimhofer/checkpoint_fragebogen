@@ -37,7 +37,7 @@ import { buildPayloadData } from "@/components/domain/fragebogen/derive";
 import { rehydrateResponsesFromPayloadData } from "@/components/domain/fragebogen/derive";
 
 const CURR_VERSION = "0.81";
-const SCHEMA_VERSION = "1"; // bump if question set changes
+const SCHEMA_VERSION = "1";
 const LOCAL_STORE_VAR = `chp_draft_${CURR_VERSION}`
 
 const ANSWER_INDENT = "pl-6 md:pl-8";
@@ -46,7 +46,6 @@ const LINK_MUTED   = "text-muted-foreground hover:text-foreground";
 export const OTHER_CODE = "other" as const;
 
 
-/// defining context for ui rendering based on INPUT TYPE, QID, COND. RULEs
 type RenderCtx = {
   qid: string;
   def: Question;
@@ -56,10 +55,6 @@ type RenderCtx = {
 type Renderer = (ctx: RenderCtx) => React.ReactNode;
 
 export default function CollectorWorkspace({
-    // backend,
-    // setBackend,
-    // dataFolder,
-    // setDataFolder,
     rehydrateData,
     onRehydrated,
 
@@ -70,10 +65,6 @@ export default function CollectorWorkspace({
     resetToken,
     hostname
   }: {
-    // backend: BackendTarget;
-    // setBackend: (b: BackendTarget) => void;
-    // dataFolder: string | null;
-    // setDataFolder: (p: string | null) => void;
     rehydrateData?: any;
     onRehydrated?: () => void;
 
@@ -86,25 +77,18 @@ export default function CollectorWorkspace({
   }) {
 
 
-
-  //// get keys for schema
-  // const test = getVarsWithQuestionNo(responses)
-  // console.log("responses", responses)
-  // const { meta } = useAppSettings();
-
   const { backend, dataFolder, lang, apiBase, apiToken} = useAppSettings();
   const { toast, responses, setResponses, backup, setBackup } = useQuestionnaireState(LOCAL_STORE_VAR);
 
   React.useEffect(() => {
     if (!rehydrateData) return;
-    // console.log("rehydrating with data", rehydrateData);
     const payload =
     rehydrateData && typeof rehydrateData === "object" && "payloadData" in rehydrateData
       ? (rehydrateData as any).payloadData
       : rehydrateData;
     const restored = rehydrateResponsesFromPayloadData(payload);
     setResponses(restored);
-    onRehydrated?.(); // clear trigger
+    onRehydrated?.();
   }, [rehydrateData]);
 
   const resetForm = React.useCallback(() => {
@@ -130,7 +114,16 @@ export default function CollectorWorkspace({
   const renderVax4 = ({ qid, title, qno }: RenderCtx) => {
     const v = (responses[qid] as "yes" | "no" | "unknown" | "infection" | "" | undefined) ?? "";
     const yrKey = `${qid}_infection_year`;
-    const yrVal = (responses[yrKey] ?? "") as string | number | "";
+    // const yrVal = (responses[yrKey] ?? "") as string | number | "";
+    const yrVal = String(responses[yrKey] ?? "");
+
+    // console.log("VAX", {
+    //   qid,
+    //   v,
+    //   yrKey,
+    //   yrVal,
+    //   rawYear: responses[yrKey],
+    // });
 
     return (
       <div key={qid} className="mb-6">
@@ -239,11 +232,6 @@ export default function CollectorWorkspace({
             onChange={(next) => setResponses(p => ({ ...p, [qid]: next }))}
           />
         </div>
-        {/* <div className="mt-2">
-          <Button variant="link" size="sm" className="text-muted-foreground hover:text-foreground"  onClick={() => skipQuestion(qid)}>
-            {SKIP_LABEL[lang]}
-          </Button>
-        </div> */}
       </div>
       );
   }
@@ -288,7 +276,7 @@ export default function CollectorWorkspace({
             onChange={(code) => {
               setResponses(prev => ({
                 ...prev,
-                [qid]: code, // "DE" | "DZ" | null
+                [qid]: code,
               }));
             }}
             lang={lang}
@@ -321,7 +309,6 @@ export default function CollectorWorkspace({
           no={qno}
           title={title}
           right={
-            // qid !== "testanforderungen" ? (
               <Button
                 variant="link"
                 size="sm"
@@ -330,7 +317,6 @@ export default function CollectorWorkspace({
               >
                 {C.SKIP_LABEL[lang]}
               </Button>
-            // ) : null
           }
         />
 
@@ -355,7 +341,6 @@ export default function CollectorWorkspace({
                         <Checkbox
                           id={`${qid}-${item.code}`}
                           checked={checked}
-                          // disabled={selected.includes("counsel") && item.code !== "counsel"}
                           onCheckedChange={(c) => onCheckboxToggle(qid, item.code, c === true)}
                         />
                         <span>{item.labels[lang]}</span>
@@ -477,10 +462,10 @@ export default function CollectorWorkspace({
       setResponses={setResponses}
       indentClass={ANSWER_INDENT}
       onSkip={() => {
-        skipQuestion(qid); // or your own skip handler
+        skipQuestion(qid);
         setResponses(prev => {
           const next = { ...prev };
-          next["sti_history_yesno"] = "pnr"; // if you use skip marker
+          next["sti_history_yesno"] = "pnr";
           next["sti_history_which"] = [];
           delete next["sti_history_which_other"];
           delete next["sti_history_years"];
@@ -545,12 +530,6 @@ export default function CollectorWorkspace({
           }}
         />
       </div>
-
-      {/* <div className="mt-2">
-        <Button variant="link" size="sm" className="text-muted-foreground hover:text-foreground"  onClick={() => skipQuestion(qid)}>
-          {SKIP_LABEL[lang]}
-        </Button>
-      </div> */}
     </div>
     )
 
@@ -572,7 +551,7 @@ export default function CollectorWorkspace({
           lang={lang}
           value={responses[qid] ?? ""}
           onChange={(next) => setResponses((p) => ({ ...p, [qid]: next }))}
-          separator="space"
+          // separator="space"
         />
       </div>
     </div>
@@ -605,7 +584,6 @@ export default function CollectorWorkspace({
   ];
 
   function skipQuestion(qid: string) {
-    // const def = R.Q[qid];
     const def = QUESTION_BY_QID[qid];
     setBackup(prev => ({ ...prev, [qid]: responses[qid] }));
     setResponses(prev => {
@@ -618,7 +596,6 @@ export default function CollectorWorkspace({
     if (def.type === "vax4") delete next[`${qid}_infection_year`];
     return next;
   });
-    // setResponses(prev => ({ ...prev, [qid]: (def.type === "radio"  || def.type === "country" || def.type === "yesno") ? "pnr" : ["pnr"] }));
   }
 
   function unskipQuestion(qid: string) {
@@ -635,9 +612,9 @@ export default function CollectorWorkspace({
   }
 
   function handleTestanforderungChange(
-  code: string, // anforderung identifier
-  checked: boolean, // angefordert: yes/no
-  qid: string // question/anfordering text / short description
+  code: string, 
+  checked: boolean,
+  qid: string
   ) {
     setResponses((prev) => {
       const arr = new Set<string>(prev[qid] || []);
@@ -645,29 +622,21 @@ export default function CollectorWorkspace({
       if (checked) {
         arr.add(code);
 
-        // Nur Beratung clears all others
         if (code === "counsel") {
           return { ...prev, [qid]: ["counsel"] };
         }
 
-        // Any other clears "counsel"
         arr.delete("counsel");
 
-
-        // NOTE: not sure why deselection/selection gon/chlam logic exists below, since chlam/gon are always tested together
-        /// this might be a relict from changing variables -> refactor at some point and make sure output written is fine
-
-        // Gonorrhoe auto-selects Chlamydien
         if (C.GONO_CHLAM_MAP[code]) {
           const chl = C.GONO_CHLAM_MAP[code];
           const chlamArr = new Set<string>(prev[qid] || []);
           chlamArr.add(chl);
-          arr.add(chl); // ensure in same set
+          arr.add(chl);
         }
       } else {
         arr.delete(code);
 
-        // Gonorrhoe auto-deselects Chlamydien
         if (C.GONO_CHLAM_MAP[code]) {
           const chl = C.GONO_CHLAM_MAP[code];
           arr.delete(chl);
@@ -690,10 +659,9 @@ export default function CollectorWorkspace({
 
       const next: Record<string, any> = { ...prev, [qid]: Array.from(curr) };
 
-      // if OTHER was just unchecked, wipe its text
       if (code === OTHER_CODE && !checked) {
         const otherKey = `${qid}_other`;
-        delete next[otherKey];  // or: next[otherKey] = "";
+        delete next[otherKey];
       }
 
       return next;
@@ -702,10 +670,8 @@ export default function CollectorWorkspace({
 
   function onCheckboxToggle(qid: string, code: string, checked: boolean) {
    if (qid === "testanforderungen") {
-      // your special rules
       handleTestanforderungChange(code, checked, qid);
 
-      // ALSO clear if "other" unchecked inside the special handler path
       if (code === OTHER_CODE && !checked) {
         setResponses(prev => {
           const next = { ...prev };
@@ -784,7 +750,6 @@ export default function CollectorWorkspace({
   const [submitState, setSubmitState] = useState<{ status: "idle" | "submitting" | "success" | "error"; message?: string }>({ status: "idle" });
   
   useEffect(() => {
-    // window.scrollTo({ top: 0, behavior: "smooth" });
     requestAnimationFrame(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
@@ -793,10 +758,6 @@ export default function CollectorWorkspace({
   const hivDisabled = responses["hiv_test"] === "no";
 
   const varsWithNo = getVarsWithQuestionNo(responses);
-  // bankt.ts -> variable superset (can be multiple per question)
-  // quenstions answered requires conditional set (e.g, iff other/andere -> free text field)
-  // therefore, including relevance filter
-  // console.log("varsWithNo", varsWithNo)
 
   const unansweredDE_nb = varsWithNo
   .filter(({ var: v }) => isEmptyAnswer(responses[v]) && !isSkipped(responses[v]))
@@ -814,9 +775,6 @@ export default function CollectorWorkspace({
 
  function buildPayload() {
     const data = buildPayloadData(responses);
-
-    // const combined_hn = `${responses["beraterkommentar"]}\n${hostname} ?? ""`;
-
     return {
       payload: {
         meta: {
@@ -843,7 +801,6 @@ export default function CollectorWorkspace({
     setSubmitState({ status: "submitting" });
 
     const payload = buildPayload();
-    // console.log('pl', payload)
 
     try {
         let r: SubmitResult;
@@ -894,7 +851,7 @@ export default function CollectorWorkspace({
         toast({
           title: "Gespeichert",
           description: `Besucher-ID: ${responses["besucherkennung"] || "-"}\nBerater-ID: ${responses["beraterkennung"] || "-"}`,
-          duration: 2500, // optional
+          duration: 2500,
           variant: "success",
         });
 
@@ -917,7 +874,6 @@ export default function CollectorWorkspace({
             });
 
             toast({
-              // variant: "destructive",
               title: "Fehler beim Speichern!",
               description: message,
             });
@@ -1165,11 +1121,6 @@ export default function CollectorWorkspace({
                           <li key={q}>{q}</li>
                         ))}
                         
-                          {/* {unansweredDE_nb.map((q) => {
-                            console.log("q:", q, typeof q);
-                          <li key={q}>{q.props}</li>
-                          
-                        })} */}
                       </ul>
                       </>
                       ) : (

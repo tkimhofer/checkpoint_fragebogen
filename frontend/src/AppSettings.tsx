@@ -95,10 +95,6 @@ export function AppSettingsProvider({
     setSetting("apiToken", apiToken);
   }, [hydrated, apiToken]);
 
-  // React.useEffect(() => {
-  //   console.log("loaded token:", apiToken);
-  // }, [apiToken]);
-
 
 
   return (

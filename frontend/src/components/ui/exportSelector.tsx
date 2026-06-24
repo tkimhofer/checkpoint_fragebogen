@@ -1,7 +1,4 @@
 import React from "react";
-// import { invoke } from "@tauri-apps/api/core";
-// import { useState } from "react";
-
 
 export type BackendTarget = "json" | "datenbank";
 

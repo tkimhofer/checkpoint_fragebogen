@@ -1,7 +1,7 @@
 [package]
 name = "checkpoint"
 version = "0.7.8"
-description = "checkpoint fragebogen der aids hilfe duisburg"
+description = "beratung und test (but) fragebogen der aids hilfe duisburg / kreis wesel"
 authors = ["tkimhofer"]
 license = ""
 repository = "https://github.com/tkimhofer/checkpoint_fragebogen"

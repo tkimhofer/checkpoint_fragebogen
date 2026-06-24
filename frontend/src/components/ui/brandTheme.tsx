@@ -2,7 +2,6 @@ import * as React from "react";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
-/** Page wrapper that applies the AHD theme and optional background */
 export function BrandTheme({
   children,
   dark = false,
@@ -29,7 +28,6 @@ export function BrandTheme({
   );
 }
 
-/** Content container with comfortable max width */
 export function BrandPage({
   children,
   className,
@@ -38,7 +36,7 @@ export function BrandPage({
 }: {
   children: React.ReactNode;
   className?: string;
-  maxWidth?: string; // e.g. "max-w-screen-2xl" or "max-w-none"
+  maxWidth?: string;
   padded?: boolean;
 }) {
   return (
@@ -88,7 +86,6 @@ export function BrandHeader({
   );
 }
 
-/** Reusable chip class tokens (selected vs. idle) */
 export const chipBase =
   "px-3 py-1 text-sm rounded-md border transition-colors";
 export const chipOn =

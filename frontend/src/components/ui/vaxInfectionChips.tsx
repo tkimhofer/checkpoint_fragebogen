@@ -1,7 +1,7 @@
 
 import React from "react";
 import clsx from "clsx";
-import type { Lang } from "@/components/domain/fragebogen/types"; // or "@/i18n/translations" if Lang lives there
+import type { Lang } from "@/components/domain/fragebogen/types";
 
 export function VaxInfectionChips({
   lang, value, onChange, year, onYearChange, className,
@@ -9,7 +9,7 @@ export function VaxInfectionChips({
   lang: Lang;
   value: "yes" | "no" | "unknown" | "infection" | "";
   onChange: (v: "yes" | "no" | "unknown" | "infection") => void;
-  year: string;                 // keep it string for controlled input
+  year: string;
   onYearChange: (y: string) => void;
   className?: string;
 }) {
@@ -38,7 +38,7 @@ export function VaxInfectionChips({
     );
   };
 
-  const currYear = new Date().getFullYear();
+  // const currYear = new Date().getFullYear();
 
   return (
     <div className={clsx("flex flex-col gap-2", className)}>
@@ -61,10 +61,6 @@ export function VaxInfectionChips({
             className="w-full rounded-md border px-3 py-1.5 text-sm"
             aria-label={t.yearPh[lang]}
           />
-          {/* optionally validate display here */}
-          {/* <div className="mt-1 text-xs text-muted-foreground">
-            {`1900–${currYear}`}
-          </div> */}
         </div>
       )}
     </div>

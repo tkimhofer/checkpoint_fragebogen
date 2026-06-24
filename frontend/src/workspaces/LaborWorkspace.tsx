@@ -101,14 +101,6 @@ export default function LabWorkspace({
   headerRight?: React.ReactNode;
 }) {
 
-  // React.useEffect(() => {
-  //   (async () => {
-  //     const dir = await appDataDir();
-  //     console.log("App data dir:", dir);
-  //   })();
-  // }, []);
-
-  // const { backend, setBackend, dataFolder, setDataFolder } = useAppSettings();
   const { backend, dataFolder, apiBase, apiToken} = useAppSettings();
   const [items, setItems] = React.useState<EntryListItem[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -121,9 +113,7 @@ export default function LabWorkspace({
   
 
   const handleLoadJSON = async () => {
-    // setLoading(true);
-
-    console.log("Loading entries with backend:", backend);
+    // console.log("Loading entries with backend:", backend);
     try {
 
       // Lazy-load Tauri APIs only when needed
@@ -217,10 +207,10 @@ export default function LabWorkspace({
           built.push({
             id,
             created_at: createdAt,
-            n_tests,               // DB sends as string
-            tests,                 // DB sends as string
+            n_tests, 
+            tests,
             label: `${besucher || id.slice(0, 8)} am ${fmtLabelTs(createdAt)}`,
-            pl,                    // full payload object (same as DB)
+            pl,
           } as any);
         } catch (e) {
           console.warn("Skipping invalid JSON file:", f.name, e);
@@ -236,8 +226,6 @@ export default function LabWorkspace({
       setLoading(false);
     }
   };
-
-  // const { meta } = useAppSettings();
   
   const handleTodayClick = () => {
 
@@ -252,8 +240,6 @@ export default function LabWorkspace({
         setItems([]);
         return;
       }
-
-
       handleLoadJSON()
       return;
     }
@@ -332,8 +318,9 @@ export default function LabWorkspace({
           </div>
         }
       />
-       <div className="space-y-4">
-        <div className="flex items-center gap-3">
+      <div className="space-y-4">
+        <div className="flex items-start">
+        <div className="flex flex-col">
           <div className="flex items-center gap-1">
             <div className="w-[240px] shrink-0">
               <IntakeDatePicker
@@ -343,28 +330,33 @@ export default function LabWorkspace({
                 onSelectDate={handleDateSelect}
               />
             </div>
+
             <Button
               variant="quiet"
               onClick={handleTodayClick}
-              className="h-6 w-6 flex items-center justify-center text-xs"
+              className="h-8 px-2 text-xs whitespace-nowrap"
             >
-              {loading ? "…" : "H"}
+              Heute
             </Button>
           </div>
-          <div className="text-xs text-muted-foreground">
-            {items.length > 0 &&
-              `${items.length} ${items.length === 1 ? "Eintrag" : "Einträge"}`}
+
+          <div className="mt-1 pl-1 text-[10px] leading-none text-muted-foreground">
+            {items.length} {items.length === 1 ? "Eintrag" : "Einträge"}
           </div>
-          <div className="flex-1" />
-          <Button
-            disabled={selectedIds.size === 0}
-            onClick={handleStatsClick}
-            variant="quiet"
-            className="h-6 text-xs"
-          >
-            S ({selectedIds.size})
-          </Button>
         </div>
+
+        <div className="flex-1" />
+
+        <Button
+          disabled={selectedIds.size === 0}
+          onClick={handleStatsClick}
+          variant="quiet"
+          className="h-8 px-3 text-xs whitespace-nowrap"
+        >
+          Statistik ({selectedIds.size})
+        </Button>
+      </div>
+        
         <StatsModal
           opened={statsModalOpen}
           onClose={() => setStatsModalOpen(false)}
